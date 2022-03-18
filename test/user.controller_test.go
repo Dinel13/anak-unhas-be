@@ -59,10 +59,6 @@ func setupRouter(db *sql.DB) http.Handler {
 	gSecret := os.Getenv("SECRET_G")
 	googleCred := helper.NewGoogleClient(gId, gSecret)
 
-	// xendit
-	xenditSecretKey := os.Getenv("XENDIT_SECRET_KEY")
-	xenditToken := os.Getenv("x-callback-token")
-
 	// validator
 	validate := validator.New()
 
@@ -71,38 +67,12 @@ func setupRouter(db *sql.DB) http.Handler {
 	userService := service.NewUserService(userRepository, db, validate, googleCred)
 	userController := controller.NewUserController(userService)
 
-	// pengajar
-	teacherRepository := repository.NewTeacherRepository()
-	teacherService := service.NewTeacherService(teacherRepository, db, validate)
-	teacherController := controller.NewTeacherController(teacherService)
+	// chat
+	chatRepo := repository.NewChatRepository()
+	chatService := service.NewChatService(chatRepo, db, validate)
+	chatController := controller.NewChatController(chatService)
 
-	// course
-	courseRepository := repository.NewCourseRepository()
-	courseService := service.NewCourseService(courseRepository, db, validate)
-	courseController := controller.NewCourseController(courseService)
-
-	// cart
-	cartRepo := repository.NewCartRepository()
-	cartService := service.NewCartService(cartRepo, db, validate)
-	cartController := controller.NewCartController(cartService)
-
-	// order
-	orderRepo := repository.NewOrderRepository()
-	orderService := service.NewOrderService(orderRepo, db, xenditSecretKey, validate)
-	orderController := controller.NewOrderController(orderService)
-
-	// order
-	payRepo := repository.NewPaymentRepository()
-	payService := service.NewPaymentService(payRepo, db, validate)
-	payController := controller.NewPaymentController(payService, xenditToken)
-
-	// other
-	otherRepo := repository.NewOtherRepository()
-	otherService := service.NewOtherService(otherRepo, db, validate)
-	otherController := controller.NewOtherController(otherService)
-
-	route := app.NewRouter(userController, teacherController, courseController,
-		cartController, orderController, payController, otherController)
+	route := app.NewRouter(userController, chatController)
 
 	return route
 }

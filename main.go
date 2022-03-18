@@ -28,8 +28,17 @@ func main() {
 	dbuser := os.Getenv("DB_user")
 	dbpass := os.Getenv("DB_pass")
 	dbconf := fmt.Sprintf("host=%s port=%s dbname=%s  user=%s password=%s sslmode=disable", dbhost, dbport, dbname, dbuser, dbpass)
-	db := app.NewDB(dbconf)
+	db, err := app.NewDBpostgres(dbconf)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer db.Close()
+
+	dbCsdra, err := app.NewDBCassandra("anakunhas")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dbCsdra.Close()
 
 	// google oauth
 	gId := os.Getenv("ID_G")
@@ -44,15 +53,12 @@ func main() {
 	userService := service.NewUserService(userRepository, db, validate, googleCred)
 	userController := controller.NewUserController(userService)
 
-	// other
-	otherRepo := repository.NewOtherRepository()
-	otherService := service.NewOtherService(otherRepo, db, validate)
-	// for websocket
-	// hub := helper.NewHub()
-	// go hub.Run()
-	otherController := controller.NewOtherController(otherService)
+	// chat
+	chatRepo := repository.NewChatRepository()
+	chatService := service.NewChatService(chatRepo, db, dbCsdra, validate)
+	chatController := controller.NewChatController(chatService)
 
-	route := app.NewRouter(userController, otherController)
+	route := app.NewRouter(userController, chatController)
 
 	name := os.Getenv("APP_name")
 	port := os.Getenv("APP_port")

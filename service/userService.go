@@ -36,6 +36,12 @@ func (s *UserServiceImpl) Create(ctx context.Context, user web.UserCreateRequest
 		return nil, err
 	}
 
+	// cek if email use domain student.unhas.ac.id
+	isDomainUnhas := helper.IsDomainUnhas(user.Email)
+	if !isDomainUnhas {
+		return nil, errors.New("email harus berupa email dari student.unhas.ac.id")
+	}
+
 	tx, err := s.DB.Begin()
 	if err != nil {
 		return nil, err
@@ -111,6 +117,11 @@ func (s *UserServiceImpl) LoginGoogle(ctx context.Context, req web.UserAuthGoogl
 	}
 	if payload.Claims["sub"] != req.GoogleId {
 		return nil, errors.New("google id tidak sesuai")
+	}
+
+	isDomainUnhas := helper.IsDomainUnhas(req.Email)
+	if !isDomainUnhas {
+		return nil, errors.New("email harus berupa email dari student.unhas.ac.id")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.GoogleId), bcrypt.DefaultCost)

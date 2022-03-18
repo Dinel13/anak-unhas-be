@@ -5,14 +5,15 @@ import (
 	"log"
 	"time"
 
-	"github.com/dinel13/anak-unhas-be/helper"
+	"github.com/gocql/gocql"
 	_ "github.com/lib/pq"
 )
 
-func NewDB(dbConf string) *sql.DB {
-	log.Println("Connecting to database...")
+func NewDBpostgres(dbConf string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", dbConf)
-	helper.PanicIfError(err)
+	if err != nil {
+		return nil, err
+	}
 
 	db.SetMaxIdleConns(10)
 	db.SetMaxOpenConns(20)
@@ -20,8 +21,21 @@ func NewDB(dbConf string) *sql.DB {
 	db.SetConnMaxIdleTime(10 * time.Minute)
 
 	err = db.Ping()
-	helper.PanicIfError(err)
+	if err != nil {
+		return nil, err
+	}
 
-	log.Println("Connected to database!")
-	return db
+	log.Println("Connected to postgres!")
+	return db, nil
+}
+
+func NewDBCassandra(key string) (*gocql.Session, error) {
+	cluster := gocql.NewCluster("127.0.0.1")
+	cluster.Keyspace = key
+	session, err := cluster.CreateSession()
+	if err != nil {
+		return nil, err
+	}
+	log.Println("Connected to cassandra!")
+	return session, nil
 }

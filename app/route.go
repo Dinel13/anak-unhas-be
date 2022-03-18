@@ -10,7 +10,7 @@ import (
 
 func NewRouter(
 	uc domain.UserController,
-	otc domain.OtherController,
+	otc domain.ChatController,
 ) http.Handler {
 
 	r := httprouter.New()
@@ -35,7 +35,7 @@ func NewRouter(
 	// NOtif
 	r.GET("/notif/:userId", otc.GetNotif)
 	r.PUT("/notif/:userId/:notifId", otc.MakeReadNotif)
-	r.GET("/ws/notif/:userId", otc.NotifWS) // websocket notif
+	r.GET("/ws/:userId", otc.ConnectWS) // websocket notif
 
 	// conver httproter handeler to http handler
 	rr := newServer(r)

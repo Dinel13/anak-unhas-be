@@ -12,7 +12,8 @@ import (
 )
 
 type ChatRepository interface {
-	GetTotalNewChat(*gocql.Session, int) (int, error) // no tx supaya tidak terkunci
+	GetTotalNewChat(*gocql.Session, int) (int, error)
+	SaveChat(*gocql.Session, web.Message) error
 	MakeReadNotif(context.Context, *sql.Tx, int, int) (int, error)
 }
 

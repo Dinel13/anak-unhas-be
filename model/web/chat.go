@@ -1,5 +1,9 @@
 package web
 
+import (
+	"github.com/gocql/gocql"
+)
+
 type NotifCreate struct { //from fronend
 	UserId  int    `json:"user_id"`
 	Title   string `validate:"required,min=1,max=100" json:"title"`
@@ -17,10 +21,10 @@ type NotifResponse struct {
 }
 
 type Message struct {
-	Id       int    `json:"id"`
-	FromUser int    `json:"from_user"`
-	ToUser   int    `json:"to_user"`
-	Body     string `json:"body"`
-	Read     bool   `json:"read"`
-	Time     string `json:"time"`
+	Id       gocql.UUID `json:"id"`
+	FromUser int        `json:"from_user"`
+	ToUser   int        `json:"to_user"`
+	Body     string     `json:"body"`
+	Read     bool       `json:"read"`
+	Time     gocql.UUID `json:"time"`
 }

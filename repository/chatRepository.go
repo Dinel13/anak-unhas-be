@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
-	"strconv"
 
 	"github.com/dinel13/anak-unhas-be/model/domain"
 	"github.com/dinel13/anak-unhas-be/model/web"
@@ -23,13 +21,23 @@ func (m *chatRepositoryImpl) GetTotalNewChat(session *gocql.Session, userId int)
 	smtn := `SELECT COUNT(*) FROM messages WHERE to_user = ?`
 
 	var chat int
-	err := session.Query(smtn, strconv.Itoa(userId)).Scan(&chat)
+	// uuid := gocql.TimeUUID()
+
+	err := session.Query(smtn, userId).Scan(&chat)
 	if err != nil {
-		fmt.Println("dd", err)
 		return 0, err
 	}
-	log.Println("chat", chat)
+	fmt.Println(chat)
 	return chat, nil
+}
+
+//SaveChat to cassandra
+func (m *chatRepositoryImpl) SaveChat(session *gocql.Session, chat web.Message) error {
+	smtn := `INSERT INTO messages (id, from_user, to_user, body, time) VALUES (?, ?, ?, ?, ?)`
+
+	err := session.Query(smtn, chat.Id, chat.FromUser, chat.ToUser, chat.Body, chat.Time).Exec()
+
+	return err
 }
 
 func (m *chatRepositoryImpl) GetNotif(ctx context.Context, tx *sql.Tx, userId int) ([]*web.NotifResponse, error) {

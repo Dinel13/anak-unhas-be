@@ -8,9 +8,22 @@ CREATE TABLE messages (
     PRIMARY KEY (id) 
 )
 CREATE INDEX IF NOT EXISTS messagetouser_key ON messages (to_user)
+CREATE INDEX IF NOT EXISTS messageread_key ON messages (read) ;
 
-CREATE TABLE chat_read (
-    id uuid,
-    user_id text,     
-    PRIMARY KEY (id) 
+
+CREATE TABLE messages (     
+    id uuid,     
+    from_user int,          
+    to_user int,          
+    body text,          
+    time timeuuid,
+    PRIMARY KEY ((to_user), id) )  ;
+
+CREATE TABLE readed (
+    id uuid,     
+    from_user int,          
+    to_user int,          
+    body text,          
+    time timeuuid,
+    PRIMARY KEY ((to_user), id) )  ; 
 );

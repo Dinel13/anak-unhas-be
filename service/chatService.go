@@ -3,14 +3,14 @@ package service
 import (
 	"context"
 	"database/sql"
-
-	"github.com/go-playground/validator/v10"
-	"github.com/gocql/gocql"
-	"github.com/gorilla/websocket"
+	"fmt"
 
 	"github.com/dinel13/anak-unhas-be/helper"
 	"github.com/dinel13/anak-unhas-be/model/domain"
 	"github.com/dinel13/anak-unhas-be/model/web"
+	"github.com/go-playground/validator/v10"
+	"github.com/gocql/gocql"
+	"github.com/gorilla/websocket"
 )
 
 type chatServiceImpl struct {
@@ -39,9 +39,26 @@ func (s *chatServiceImpl) ConnectWS(ctx context.Context, currentGorillaConn *web
 		errChan <- err
 		return
 	}
+	helper.SendNotifToUser(userId, numNotif)
 
 	if numNotif > 0 {
 		helper.SendNotifToUser(userId, numNotif)
+	}
+	id, err := gocql.RandomUUID()
+	if err != nil {
+		fmt.Println(err)
+	}
+	chat := web.Message{
+		Id:       id,
+		FromUser: 1,
+		ToUser:   2,
+		Body:     "Hello",
+		Time:     gocql.TimeUUID(),
+	}
+
+	err = s.ChatRepository.SaveChat(s.csdrSession, chat)
+	if err != nil {
+		fmt.Println(err)
 	}
 }
 

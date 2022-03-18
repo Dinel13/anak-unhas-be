@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/dinel13/anak-unhas-be/model/domain"
 	"github.com/dinel13/anak-unhas-be/model/web"
@@ -27,7 +26,6 @@ func (m *chatRepositoryImpl) GetTotalNewChat(session *gocql.Session, userId int)
 	if err != nil {
 		return 0, err
 	}
-	fmt.Println(chat)
 	return chat, nil
 }
 

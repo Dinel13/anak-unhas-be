@@ -43,29 +43,29 @@ func (s *chatServiceImpl) ConnectWS(ctx context.Context, currentGorillaConn *web
 		for {
 			chat := web.Message{}
 			err := currentConn.ReadJSON(&chat)
-			log.Println(chat)
-			isUserActive := helper.SendMessageToUser(chat)
-			if !isUserActive {
-				log.Println("User is not active")
-				id, err := gocql.RandomUUID()
-				if err != nil {
-					fmt.Println("buat uuid", err)
-					return
-				}
-				chat := web.Message{
-					Id:   id,
-					From: chat.From,
-					To:   chat.To,
-					Body: chat.Body,
-					Time: gocql.TimeUUID(),
-				}
-				err = s.ChatRepository.SaveChat(s.csdrSession, chat)
-				if err != nil {
-					fmt.Println("save casandar", err)
-					return
+			if chat.From != 0 {
+				isUserActive := helper.SendMessageToUser(chat)
+				if !isUserActive {
+					log.Println("User is not active")
+					id, err := gocql.RandomUUID()
+					if err != nil {
+						fmt.Println("buat uuid", err)
+						return
+					}
+					chat := web.Message{
+						Id:   id,
+						From: chat.From,
+						To:   chat.To,
+						Body: chat.Body,
+						Time: gocql.TimeUUID(),
+					}
+					err = s.ChatRepository.SaveChat(s.csdrSession, chat)
+					if err != nil {
+						fmt.Println("save casandar", err)
+						return
+					}
 				}
 			}
-
 			if err != nil {
 				if strings.Contains(err.Error(), "websocket: close") {
 					helper.EjectConnection(currentConn)
@@ -83,12 +83,10 @@ func (s *chatServiceImpl) ConnectWS(ctx context.Context, currentGorillaConn *web
 		errChan <- err
 		return
 	}
-	helper.SendNotifToUser(userId, numNotif)
 
 	if numNotif > 0 {
 		helper.SendNotifToUser(userId, numNotif)
 	}
-
 }
 
 func (s *chatServiceImpl) MakeReadNotif(ctx context.Context, userId, notifId int) error {

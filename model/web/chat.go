@@ -21,10 +21,9 @@ type NotifResponse struct {
 }
 
 type Message struct {
-	Id       gocql.UUID `json:"id"`
-	FromUser int        `json:"from_user"`
-	ToUser   int        `json:"to_user"`
-	Body     string     `json:"body"`
-	Read     bool       `json:"read"`
-	Time     gocql.UUID `json:"time"`
+	Id   gocql.UUID `json:"id"`
+	From int        `json:"from"`
+	To   int        `json:"to"`
+	Body string     `json:"body"`
+	Time gocql.UUID `json:"time"`
 }

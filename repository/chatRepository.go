@@ -35,7 +35,7 @@ func (m *chatRepositoryImpl) GetTotalNewChat(session *gocql.Session, userId int)
 func (m *chatRepositoryImpl) SaveChat(session *gocql.Session, chat web.Message) error {
 	smtn := `INSERT INTO messages (id, from_user, to_user, body, time) VALUES (?, ?, ?, ?, ?)`
 
-	err := session.Query(smtn, chat.Id, chat.FromUser, chat.ToUser, chat.Body, chat.Time).Exec()
+	err := session.Query(smtn, chat.Id, chat.From, chat.To, chat.Body, chat.Time).Exec()
 
 	return err
 }

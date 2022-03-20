@@ -67,9 +67,15 @@ func setupRouter(db *sql.DB) http.Handler {
 	userService := service.NewUserService(userRepository, db, validate, googleCred)
 	userController := controller.NewUserController(userService)
 
+	dbCsdra, err := app.NewDBCassandra("anakunhas")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dbCsdra.Close()
+
 	// chat
 	chatRepo := repository.NewChatRepository()
-	chatService := service.NewChatService(chatRepo, db, validate)
+	chatService := service.NewChatService(chatRepo, db, dbCsdra, validate)
 	chatController := controller.NewChatController(chatService)
 
 	route := app.NewRouter(userController, chatController)

@@ -243,3 +243,101 @@ func (m *userRepositoryImpl) GetAddress(ctx context.Context, tx *sql.DB, id int)
 
 	return &address, nil
 }
+
+// SERACH BY NAME
+func (m *userRepositoryImpl) Search(ctx context.Context, DB *sql.DB, query web.SearchRequest) ([]*web.UserSortResponse, error) {
+	stmt := `SELECT id, name, image, jurusan, angkatan FROM users WHERE name LIKE $1 ORDER BY id ASC LIMIT 20 OFFSET ($2 - 1) * 20`
+
+	rows, err := DB.QueryContext(ctx, stmt, "%"+query.Query+"%", query.Page)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var users []*web.UserSortResponse
+
+	for rows.Next() {
+		var user web.UserSortResponse
+
+		err = rows.Scan(
+			&user.Id,
+			&user.Name,
+			&user.Image,
+			&user.Jurusan,
+			&user.Angkatan,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, &user)
+	}
+
+	return users, nil
+}
+
+// filter by name, jurusan, angkatan
+func (m *userRepositoryImpl) Filter(ctx context.Context, DB *sql.DB, query web.FilterRequest) ([]*web.UserSortResponse, error) {
+	stmt := `SELECT id, name, image, jurusan, angkatan FROM users WHERE name LIKE $1 AND jurusan LIKE $2 AND angkatan LIKE $3 ORDER BY id ASC LIMIT 20 OFFSET ($4 - 1) * 20`
+
+	rows, err := DB.QueryContext(ctx, stmt, "%"+query.Name+"%", "%"+query.Jurusan+"%", "%"+query.Angkatan+"%", query.Page)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var users []*web.UserSortResponse
+
+	for rows.Next() {
+		var user web.UserSortResponse
+
+		err = rows.Scan(
+			&user.Id,
+			&user.Name,
+			&user.Image,
+			&user.Jurusan,
+			&user.Angkatan,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, &user)
+	}
+
+	return users, nil
+}
+
+// count total result search
+func (m *userRepositoryImpl) TotalResultSearch(ctx context.Context, DB *sql.DB, keyword string) (int, error) {
+	stmt := `SELECT COUNT(*) FROM users WHERE name LIKE $1`
+
+	var count int
+	err := DB.QueryRowContext(ctx, stmt, "%"+keyword+"%").Scan(&count)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+// count total result filter
+func (m *userRepositoryImpl) TotalResultFilter(ctx context.Context, DB *sql.DB, filter web.FilterRequest) (int, error) {
+	stmt := `SELECT COUNT(*) FROM users WHERE name LIKE $1 AND jurusan LIKE $2 AND angkatan LIKE $3`
+
+	var count int
+	err := DB.QueryRowContext(ctx, stmt, "%"+filter.Name+"%", "%"+filter.Jurusan+"%", "%"+filter.Angkatan+"%").Scan(&count)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

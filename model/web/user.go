@@ -24,6 +24,14 @@ type UserResponse struct {
 	Token string `json:"token"`
 }
 
+type UserSortResponse struct {
+	Id       int     `json:"id"`
+	Name     string  `json:"name"`
+	Image    *string `json:"image"`
+	Jurusan  *string `json:"jurusan"`
+	Angkatan *int    `json:"angkatan"`
+}
+
 type UserDetailResponse struct {
 	Id        int     `json:"id"`
 	Name      string  `json:"name"`
@@ -85,4 +93,28 @@ type UserForgetPasswordRequest struct {
 type AddressResponse struct {
 	Provinsi  *string `json:"provinsi"`
 	Kabupaten *string `json:"kabupaten"`
+}
+
+type FilterRequest struct {
+	Name     string `json:"name"`
+	Fakultas string `json:"fakultas"`
+	Jurusan  string `json:"jurusan"`
+	Angkatan string `json:"angkatan"`
+	Skill    string `json:"skill"`
+	Page     int    `json:"page"`
+}
+
+type SearchRequest struct {
+	Query string `json:"query"`
+	Page  int    `json:"page"`
+}
+
+type FilterResponse struct {
+	Total int                 `json:"total"`
+	Users []*UserSortResponse `json:"users"`
+}
+
+type SearchResponse struct {
+	Total int                 `json:"total"`
+	Users []*UserSortResponse `json:"users"`
 }

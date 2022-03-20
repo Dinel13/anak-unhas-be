@@ -26,6 +26,9 @@ type UserController interface {
 	ForgetPassword(http.ResponseWriter, *http.Request, httprouter.Params)
 	GetPhone(http.ResponseWriter, *http.Request, httprouter.Params)
 	GetAddress(http.ResponseWriter, *http.Request, httprouter.Params)
+
+	Search(http.ResponseWriter, *http.Request, httprouter.Params)
+	Filter(http.ResponseWriter, *http.Request, httprouter.Params)
 }
 
 type UserService interface {
@@ -41,6 +44,9 @@ type UserService interface {
 	GetImage(context.Context, int) (*string, error)
 	GetPhone(context.Context, int) (*string, error)
 	GetAddress(context.Context, int) (*web.AddressResponse, error)
+
+	Search(context.Context, web.SearchRequest) (*web.SearchResponse, error)
+	Filter(context.Context, web.FilterRequest) (*web.FilterResponse, error)
 }
 
 type UserRepository interface {
@@ -54,4 +60,10 @@ type UserRepository interface {
 	GetImage(context.Context, *sql.DB, int) (*string, error)
 	GetPhone(context.Context, *sql.DB, int) (*string, error)
 	GetAddress(context.Context, *sql.DB, int) (*web.AddressResponse, error)
+
+	Search(context.Context, *sql.DB, web.SearchRequest) ([]*web.UserSortResponse, error)
+	Filter(context.Context, *sql.DB, web.FilterRequest) ([]*web.UserSortResponse, error)
+
+	TotalResultSearch(context.Context, *sql.DB, string) (int, error)
+	TotalResultFilter(context.Context, *sql.DB, web.FilterRequest) (int, error)
 }

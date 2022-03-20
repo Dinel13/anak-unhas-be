@@ -32,6 +32,9 @@ func NewRouter(
 	r.GET("/user/phone/:userId", uc.GetPhone)
 	r.GET("/user/address/:userId", uc.GetAddress)
 
+	r.GET(("/users/search"), uc.Search)
+	r.GET(("/users/filter"), uc.Filter)
+
 	// NOtif
 	r.GET("/notif/:userId", otc.GetNotif)
 	r.PUT("/notif/:userId/:notifId", otc.MakeReadNotif)

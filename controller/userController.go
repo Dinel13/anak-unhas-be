@@ -254,3 +254,40 @@ func (m *UserControllerImpl) GetAddress(w http.ResponseWriter, r *http.Request, 
 	}
 	helper.WriteJson(w, http.StatusOK, address, "address")
 }
+
+func (m *UserControllerImpl) Search(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	// get serach from request query
+	queryValue := r.URL.Query()
+	search := queryValue.Get("search")
+	pageString := queryValue.Get("page")
+	// search := p.ByName("search")
+	// pageString := p.ByName("page")
+	page, err := strconv.Atoi(pageString)
+	if err != nil {
+		helper.WriteJsonError(w, err, http.StatusInternalServerError)
+		return
+	}
+	query := web.SearchRequest{
+		Query: search,
+		Page:  page,
+	}
+
+	user, err := m.UserService.Search(r.Context(), query)
+	if err != nil {
+		helper.WriteJsonError(w, err, http.StatusInternalServerError)
+		return
+	}
+	helper.WriteJson(w, http.StatusOK, user, "users")
+}
+
+// Filter
+func (m *UserControllerImpl) Filter(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	var filter web.FilterRequest
+	helper.ReadJson(r, &filter)
+	user, err := m.UserService.Filter(r.Context(), filter)
+	if err != nil {
+		helper.WriteJsonError(w, err, http.StatusInternalServerError)
+		return
+	}
+	helper.WriteJson(w, http.StatusOK, user, "users")
+}

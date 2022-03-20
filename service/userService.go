@@ -333,3 +333,45 @@ func (s *UserServiceImpl) GetAddress(ctx context.Context, id int) (*web.AddressR
 
 	return address, nil
 }
+
+// cari
+func (s *UserServiceImpl) Search(ctx context.Context, query web.SearchRequest) (*web.SearchResponse, error) {
+	users, err := s.UserRepository.Search(ctx, s.DB, query)
+	if err != nil {
+		return nil, err
+	}
+
+	var total int
+	if len(users) == 20 && query.Page == 1 {
+		total, err = s.UserRepository.TotalResultSearch(ctx, s.DB, query.Query)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &web.SearchResponse{
+		Users: users,
+		Total: total,
+	}, nil
+}
+
+// filter
+func (s *UserServiceImpl) Filter(ctx context.Context, filter web.FilterRequest) (*web.FilterResponse, error) {
+	users, err := s.UserRepository.Filter(ctx, s.DB, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var total int
+	if len(users) == 20 && filter.Page == 1 {
+		total, err = s.UserRepository.TotalResultFilter(ctx, s.DB, filter)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &web.FilterResponse{
+		Users: users,
+		Total: total,
+	}, nil
+}

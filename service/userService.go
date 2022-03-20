@@ -190,7 +190,7 @@ func (s *UserServiceImpl) IsExits(ctx context.Context, email string) error {
 }
 
 //DEtail for user
-func (s *UserServiceImpl) Detail(ctx context.Context, id int) (*web.UserFullResponse, error) {
+func (s *UserServiceImpl) Detail(ctx context.Context, id int) (*web.UserDetailResponse, error) {
 	user, err := s.UserRepository.Detail(ctx, s.DB, id)
 	if err != nil {
 		return nil, err

@@ -28,6 +28,7 @@ func NewRouter(
 	r.POST("/user/forgot-password", uc.ForgetPassword)
 	r.PUT("/user/reset-password", uc.UpdatePassword)
 	r.GET("/user/detail/:userId", uc.Detail)
+	r.GET("/user/myaccount/:userId", uc.Detail)
 	r.POST("/user/outh/login", uc.LoginGoogle)
 	r.GET("/user/phone/:userId", uc.GetPhone)
 	r.GET("/user/address/:userId", uc.GetAddress)

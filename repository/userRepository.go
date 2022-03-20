@@ -58,8 +58,8 @@ func (m *userRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, user web.User
 }
 
 // Detail get all field user
-func (m *userRepositoryImpl) Detail(ctx context.Context, tx *sql.DB, id int) (*web.UserFullResponse, error) {
-	var user web.UserFullResponse
+func (m *userRepositoryImpl) Detail(ctx context.Context, tx *sql.DB, id int) (*web.UserDetailResponse, error) {
+	var user web.UserDetailResponse
 
 	stmt := `SELECT id, name, email, image, wa, jurusan, fakultas, address, bio, gender, angkatan, ig, tertarik 
 	  FROM users WHERE id = $1`
@@ -110,27 +110,21 @@ func (m *userRepositoryImpl) GetByEmail(ctx context.Context, tx *sql.DB, email s
 
 func (m *userRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, user web.UserUpdateRequest) (*web.UserDetailResponse, error) {
 	stmt := `UPDATE users
-				SET name = $1, email = $2, phone = $3, job =$4, address = $5, gender = $6, provinsi =$7, kabupaten = $8
-				WHERE id = $9
-				RETURNING id, name, email, image, phone, job, address, gender, provinsi, kabupaten`
-
-	// change string born to date
-	// layoutFormat := "2006-01-02"
-	// dateBorn, err := time.Parse(layoutFormat, user.Born)
-	// if err != nil {
-	// 	return nil, err
-	// }
+				SET name =$2, wa = $3, angkatan = $4, address = $5, gender = $6, fakultas=$7, jurusan=$8, tertarik=$9, bio=$10
+				WHERE id = $1
+				RETURNING id, name, email, image, wa, jurusan, fakultas, address, bio, gender, angkatan, ig, tertarik `
 
 	row := tx.QueryRowContext(ctx, stmt,
+		user.Id,
 		user.Name,
-		user.Email,
-		user.Phone,
-		user.Job,
+		user.Wa,
+		user.Angkatan,
 		user.Address,
 		user.Gender,
-		user.Provinsi,
-		user.Kabupaten,
-		user.Id,
+		user.Fakultas,
+		user.Jurusan,
+		user.Tertarik,
+		user.Bio,
 	)
 
 	var userUpdated web.UserDetailResponse
@@ -139,12 +133,15 @@ func (m *userRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, user web.Us
 		&userUpdated.Name,
 		&userUpdated.Email,
 		&userUpdated.Image,
-		&userUpdated.Phone,
-		&userUpdated.Job,
+		&userUpdated.Wa,
+		&userUpdated.Jurusan,
+		&userUpdated.Fakultas,
 		&userUpdated.Address,
+		&userUpdated.Bio,
 		&userUpdated.Gender,
-		&userUpdated.Provinsi,
-		&userUpdated.Kabupaten,
+		&userUpdated.Angkatan,
+		&userUpdated.Ig,
+		&userUpdated.Tertarik,
 	)
 
 	if err != nil {

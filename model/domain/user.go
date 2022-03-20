@@ -36,7 +36,7 @@ type UserService interface {
 	Create(context.Context, web.UserCreateRequest) (*web.UserResponse, error)
 	Login(context.Context, web.UserLoginRequest) (*web.UserResponse, error)
 	LoginGoogle(context.Context, web.UserAuthGoogle) (*web.UserResponse, error)
-	Detail(context.Context, int) (*web.UserFullResponse, error)
+	Detail(context.Context, int) (*web.UserDetailResponse, error)
 	Update(context.Context, web.UserUpdateRequest) (*web.UserDetailResponse, error)
 	ForgetPassword(context.Context, web.UserForgetPasswordRequest) error
 	UpdatePassword(context.Context, web.UserUpdatePasswordRequest) (*web.UserResponse, error)
@@ -52,7 +52,7 @@ type UserService interface {
 type UserRepository interface {
 	IsExits(context.Context, *sql.DB, string) (bool, error)
 	Save(context.Context, *sql.Tx, web.UserCreateRequest) (*web.UserResponse, error)
-	Detail(context.Context, *sql.DB, int) (*web.UserFullResponse, error)
+	Detail(context.Context, *sql.DB, int) (*web.UserDetailResponse, error)
 	GetByEmail(context.Context, *sql.DB, string) (*web.UserResponsePassword, error)
 	Update(context.Context, *sql.Tx, web.UserUpdateRequest) (*web.UserDetailResponse, error)
 	UpdatePasword(context.Context, *sql.Tx, web.UserUpdatePasswordRequest) (*web.UserResponse, error)

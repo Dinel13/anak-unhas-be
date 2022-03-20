@@ -33,19 +33,6 @@ type UserSortResponse struct {
 }
 
 type UserDetailResponse struct {
-	Id        int     `json:"id"`
-	Name      string  `json:"name"`
-	Email     string  `json:"email"`
-	Image     *string `json:"image"`
-	Phone     *string `json:"phone"`
-	Address   *string `json:"address"`
-	Provinsi  *string `json:"provinsi"`
-	Kabupaten *string `json:"kabupaten"`
-	Job       *string `json:"job"`
-	Gender    *string `json:"gender"`
-}
-
-type UserFullResponse struct {
 	Id       int     `json:"id"`
 	Name     string  `json:"name"`
 	Email    string  `json:"email"`
@@ -73,15 +60,17 @@ type UserUpdatePasswordRequest struct {
 }
 
 type UserUpdateRequest struct {
-	Id        int    `validate:"required"`
-	Name      string `validate:"required,max=60,min=1" json:"name"`
-	Email     string `validate:"required,email,max=100,min=1" json:"email"`
-	Phone     string `validate:"required,max=20,min=1" json:"phone"`
-	Address   string `validate:"required,max=100,min=1" json:"address"`
-	Job       string `validate:"required,max=100,min=1" json:"job"`
-	Gender    string `validate:"required,max=50,min=1" json:"gender"`
-	Provinsi  string `validate:"required,max=100,min=1" json:"provinsi"`
-	Kabupaten string `validate:"required,max=100,min=1" json:"kabupaten"`
+	Id       int    `validate:"required"`
+	Name     string `validate:"required,max=60,min=1" json:"name"`
+	Gender   string `json:"gender"`
+	Wa       string `json:"wa"`
+	Jurusan  string `json:"jurusan"`
+	Fakultas string `json:"fakultas"`
+	Address  string `json:"address"`
+	Bio      string `json:"bio"`
+	Angkatan string `json:"angkatan"`
+	Ig       string `json:"ig"`
+	Tertarik string `json:"tertarik"`
 }
 
 type UserUpdateImageRequest struct {

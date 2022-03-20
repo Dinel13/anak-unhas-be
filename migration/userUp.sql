@@ -6,13 +6,14 @@ CREATE TABLE "users" (
   "verified" boolean NOT NULL DEFAULT false,
   "image" varchar DEFAULT NULL,
   "wa" varchar DEFAULT NULL,
+  "gender" varchar DEFAULT NULL,
   "address" varchar DEFAULT NULL,
   "jurusan" varchar DEFAULT NULL,
   "fakultas" varchar DEFAULT NULL,
   "ig" varchar DEFAULT NULL,
   "bio" varchar DEFAULT NULL,
   "tertarik" varchar DEFAULT NULL,
-  "angkatan" timestamptz DEFAULT NULL,
+  "angkatan" INT DEFAULT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );

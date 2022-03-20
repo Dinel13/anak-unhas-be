@@ -46,16 +46,19 @@ type UserDetailResponse struct {
 }
 
 type UserFullResponse struct {
-	Id        int     `json:"id"`
-	Name      string  `json:"name"`
-	Email     string  `json:"email"`
-	Provinsi  *string `json:"provinsi"`
-	Kabupaten *string `json:"kabupaten"`
-	Gender    *string `json:"gender"`
-	Job       *string `json:"job"`
-	Image     *string `json:"image"`
-	Phone     *string `json:"phone"`
-	Address   *string `json:"address"`
+	Id       int     `json:"id"`
+	Name     string  `json:"name"`
+	Email    string  `json:"email"`
+	Gender   *string `json:"gender"`
+	Wa       *string `json:"wa"`
+	Image    *string `json:"image"`
+	Jurusan  *string `json:"jurusan"`
+	Fakultas *string `json:"fakultas"`
+	Address  *string `json:"address"`
+	Bio      *string `json:"bio"`
+	Angkatan *string `json:"angkatan"`
+	Ig       *string `json:"ig"`
+	Tertarik *string `json:"tertarik"`
 }
 type UserResponsePassword struct {
 	Id       int    `json:"id"`

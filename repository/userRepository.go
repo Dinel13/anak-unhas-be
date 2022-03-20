@@ -61,20 +61,23 @@ func (m *userRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, user web.User
 func (m *userRepositoryImpl) Detail(ctx context.Context, tx *sql.DB, id int) (*web.UserFullResponse, error) {
 	var user web.UserFullResponse
 
-	stmt := `SELECT id, name, email, image, phone,
-	 address, provinsi, kabupaten, job, gender FROM users WHERE id = $1`
+	stmt := `SELECT id, name, email, image, wa, jurusan, fakultas, address, bio, gender, angkatan, ig, tertarik 
+	  FROM users WHERE id = $1`
 
 	err := tx.QueryRowContext(ctx, stmt, id).Scan(
 		&user.Id,
 		&user.Name,
 		&user.Email,
 		&user.Image,
-		&user.Phone,
+		&user.Wa,
+		&user.Jurusan,
+		&user.Fakultas,
 		&user.Address,
-		&user.Provinsi,
-		&user.Kabupaten,
-		&user.Job,
+		&user.Bio,
 		&user.Gender,
+		&user.Angkatan,
+		&user.Ig,
+		&user.Tertarik,
 	)
 
 	if err == sql.ErrNoRows {

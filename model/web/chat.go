@@ -27,3 +27,10 @@ type Message struct {
 	Time time.Time `json:"time"`
 	Body string    `json:"body"`
 }
+
+type Friend struct {
+	User        int       `json:"user"`
+	Friend      int       `json:"friend"`
+	Time        time.Time `json:"time"`
+	LastMessage string    `json:"last_message"`
+}

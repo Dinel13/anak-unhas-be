@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"database/sql"
 	"net/http"
 
 	"github.com/dinel13/anak-unhas-be/model/web"
@@ -13,19 +12,17 @@ import (
 
 type ChatRepository interface {
 	GetTotalNewChat(*gocql.Session, int) (int, error)
+	GetUnreadChat(session *gocql.Session, to, from int) ([]web.Message, error)
+	GetReadChat(session *gocql.Session, to, from int) ([]web.Message, error)
 	SaveChat(*gocql.Session, web.Message) error
-	MakeReadNotif(context.Context, *sql.Tx, int, int) (int, error)
+	SaveOrUpdateTimeFriend(session *gocql.Session, friend web.Friend) error
+	MakeChatRead(session *gocql.Session, to, from int) error
 }
 
-// lest service interface for business logic or use case
 type ChatService interface {
 	ConnectWS(context.Context, *websocket.Conn, int, chan error)
-	GetNotif(context.Context, int) ([]*web.NotifResponse, error)
-	MakeReadNotif(context.Context, int, int) error
 }
 
 type ChatController interface {
 	ConnectWS(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
-	GetNotif(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
-	MakeReadNotif(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 }

@@ -36,9 +36,7 @@ func NewRouter(
 	r.GET(("/users/search"), uc.Search)
 	r.POST(("/users/filter"), uc.Filter)
 
-	// NOtif
-	r.GET("/notif/:userId", otc.GetNotif)
-	r.PUT("/notif/:userId/:notifId", otc.MakeReadNotif)
+	// Chat
 	r.GET("/ws/:userId", otc.ConnectWS) // websocket notif
 
 	// conver httproter handeler to http handler

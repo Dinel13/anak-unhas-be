@@ -36,3 +36,11 @@ CREATE TABLE anakunhas.message (
     body text,
     PRIMARY KEY ((to_user, read), from_user, time) 
 ) WITH CLUSTERING ORDER BY (from_user DESC, time DESC);
+
+CREATE TABLE anakunhas.friend (     
+    user int,
+    friend int,
+    time timestamp,
+    last_message text,
+    PRIMARY KEY ((user), friend) 
+) WITH CLUSTERING ORDER BY (friend DESC);

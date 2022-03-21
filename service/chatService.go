@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/dinel13/anak-unhas-be/helper"
 	"github.com/dinel13/anak-unhas-be/model/domain"
@@ -43,29 +44,50 @@ func (s *chatServiceImpl) ConnectWS(ctx context.Context, currentGorillaConn *web
 		for {
 			chat := web.Message{}
 			err := currentConn.ReadJSON(&chat)
+			log.Println("chat", chat)
+
+			// send to user and save to db and update time friend
 			if chat.From != 0 {
+				// send to friend
 				isUserActive := helper.SendMessageToUser(chat)
 				if !isUserActive {
-					log.Println("User is not active")
-					id, err := gocql.RandomUUID()
-					if err != nil {
-						fmt.Println("buat uuid", err)
-						return
-					}
-					chat := web.Message{
-						Id:   id,
-						From: chat.From,
-						To:   chat.To,
-						Body: chat.Body,
-						Time: gocql.TimeUUID(),
-					}
-					err = s.ChatRepository.SaveChat(s.csdrSession, chat)
-					if err != nil {
-						fmt.Println("save casandar", err)
-						return
-					}
+					log.Println("User is not active", chat.To)
+				}
+
+				// save to db
+				chat := web.Message{
+					From: chat.From,
+					To:   chat.To,
+					Body: chat.Body,
+					Time: time.Now(),
+				}
+				err = s.ChatRepository.SaveChat(s.csdrSession, chat)
+				if err != nil {
+					fmt.Println("failed save chat", chat, err)
+					return
+				}
+
+				// update time friend
+				err = s.ChatRepository.SaveOrUpdateTimeFriend(s.csdrSession, web.Friend{
+					User:        chat.To,
+					Friend:      chat.From,
+					Time:        time.Now(),
+					LastMessage: chat.Body,
+				})
+				if err != nil {
+					fmt.Println("failed save time friend", chat, err)
+					return
 				}
 			}
+			// make chat read
+			if chat.Read {
+				err = s.ChatRepository.MakeChatRead(s.csdrSession, chat.To, chat.From)
+				if err != nil {
+					fmt.Println("failed make chat read", chat, err)
+					return
+				}
+			}
+
 			if err != nil {
 				if strings.Contains(err.Error(), "websocket: close") {
 					helper.EjectConnection(currentConn)
@@ -83,6 +105,7 @@ func (s *chatServiceImpl) ConnectWS(ctx context.Context, currentGorillaConn *web
 		errChan <- err
 		return
 	}
+	fmt.Println("num notif", numNotif, " for", userId)
 
 	if numNotif > 0 {
 		helper.SendNotifToUser(userId, numNotif)

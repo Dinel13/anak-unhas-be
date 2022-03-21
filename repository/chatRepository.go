@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"log"
+
 	"github.com/dinel13/anak-unhas-be/model/domain"
 	"github.com/dinel13/anak-unhas-be/model/web"
 	"github.com/gocql/gocql"
@@ -25,29 +27,46 @@ func (m *chatRepositoryImpl) GetTotalNewChat(session *gocql.Session, userId int)
 }
 
 // get unread chat from specific sender
-func (m *chatRepositoryImpl) GetUnreadChat(session *gocql.Session, to, from int) ([]web.Message, error) {
-	smtn := `SELECT from_user, to_user, read, time, body FROM message WHERE to_user = ? AND from_user = ? AND read = ?`
+func (m *chatRepositoryImpl) GetUnreadChat(session *gocql.Session, to, from int) ([]*web.Message, error) {
+	smtn := `SELECT from_user, to_user, read, time, body FROM message 
+				WHERE to_user in (?,?) AND from_user in (?,?) AND read = ?
+				`
 
-	var chat []web.Message
+	var chats []*web.Message
 
-	err := session.Query(smtn, to, from, false).Scan(&chat)
-	if err != nil {
-		return nil, err
+	log.Println(to, from)
+
+	// OR to_user = ? AND from_user = ?`
+
+	iter := session.Query(smtn, to, from, from, to, false).Iter()
+	for {
+		var chat web.Message
+		if !iter.Scan(&chat.From, &chat.To, &chat.Read, &chat.Time, &chat.Body) {
+			break
+		}
+		chats = append(chats, &chat)
 	}
-	return chat, nil
+	log.Println(chats)
+
+	return chats, nil
 }
 
 //get read chat from specific sender
-func (m *chatRepositoryImpl) GetReadChat(session *gocql.Session, to, from int) ([]web.Message, error) {
-	smtn := `SELECT from_user, to_user, read, time, body FROM message WHERE to_user = ? AND from_user = ? AND read = ?`
+func (m *chatRepositoryImpl) GetReadChat(session *gocql.Session, to, from int) ([]*web.Message, error) {
+	smtn := `SELECT from_user, to_user, read, time, body FROM message
+				WHERE to_user in (?,?) AND from_user in (?,?) AND read = ?`
 
-	var chat []web.Message
+	var chats []*web.Message
 
-	err := session.Query(smtn, to, from, true).Scan(&chat)
-	if err != nil {
-		return nil, err
+	iter := session.Query(smtn, to, from, to, from, true).Iter()
+	for {
+		var chat web.Message
+		if !iter.Scan(&chat.From, &chat.To, &chat.Read, &chat.Time, &chat.Body) {
+			break
+		}
+		chats = append(chats, &chat)
 	}
-	return chat, nil
+	return chats, nil
 }
 
 //SaveChat to cassandra
@@ -75,4 +94,26 @@ func (m *chatRepositoryImpl) MakeChatRead(session *gocql.Session, to, from int) 
 	err := session.Query(smtn, true, to, from).Exec()
 
 	return err
+}
+
+// get all friend
+func (m *chatRepositoryImpl) GetAllFriend(session *gocql.Session, userId int) ([]*web.Friend, error) {
+	smtn := `SELECT user, friend, time, last_message FROM friend WHERE user = ?`
+
+	var friends []*web.Friend
+
+	// iterate over the result set
+	iter := session.Query(smtn, userId).Iter()
+	for {
+		var friend web.Friend
+		if !iter.Scan(&friend.User, &friend.Friend, &friend.Time, &friend.LastMessage) {
+			break
+		}
+		friends = append(friends, &friend)
+	}
+	if err := iter.Close(); err != nil {
+		return nil, err
+	}
+
+	return friends, nil
 }

@@ -37,7 +37,11 @@ func NewRouter(
 	r.POST(("/users/filter"), uc.Filter)
 
 	// Chat
-	r.GET("/ws/:userId", otc.ConnectWS) // websocket notif
+	r.GET("/ws/:userId", otc.ConnectWS)                         // websocket notif
+	r.GET("/chat/friends/:userId", otc.GetAllFriend)            //get all friend
+	r.GET("/chat/unreads/:userId/:friendId", otc.GetUnreadChat) //get all unread chat
+	r.GET("/chat/reads/:userId/:frinedId", otc.GetReadChat)     //get all read chat
+	r.PUT("/chat/read", otc.MakeChatRead)                       //make chat read
 
 	// conver httproter handeler to http handler
 	rr := newServer(r)

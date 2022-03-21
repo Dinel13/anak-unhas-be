@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 
 	"github.com/dinel13/anak-unhas-be/model/domain"
 	"github.com/dinel13/anak-unhas-be/model/web"
@@ -281,11 +282,13 @@ func (m *userRepositoryImpl) Search(ctx context.Context, DB *sql.DB, query web.S
 
 // filter by name, jurusan, angkatan
 func (m *userRepositoryImpl) Filter(ctx context.Context, DB *sql.DB, query web.FilterRequest) ([]*web.UserSortResponse, error) {
-	stmt := `SELECT id, name, image, jurusan, angkatan FROM users WHERE name LIKE $1 AND jurusan LIKE $2 AND angkatan LIKE $3 ORDER BY id ASC LIMIT 20 OFFSET ($4 - 1) * 20`
+	stmt := `SELECT id, name, image, jurusan, angkatan FROM users WHERE name LIKE $1 AND jurusan LIKE $2  AND fakultas LIKE $3 AND angkatan LIKE $4 ORDER BY id ASC LIMIT 20 OFFSET ($5 - 1) * 20`
 
-	rows, err := DB.QueryContext(ctx, stmt, "%"+query.Name+"%", "%"+query.Jurusan+"%", "%"+query.Angkatan+"%", query.Page)
+	log.Println(query)
+	rows, err := DB.QueryContext(ctx, stmt, "%"+query.Name+"%", "%"+query.Jurusan+"%", "%"+query.Fakultas+"%", "%"+query.Angkatan+"%", query.Page)
 
 	if err != nil {
+		log.Println("ggg", err)
 		return nil, err
 	}
 
@@ -330,10 +333,10 @@ func (m *userRepositoryImpl) TotalResultSearch(ctx context.Context, DB *sql.DB, 
 
 // count total result filter
 func (m *userRepositoryImpl) TotalResultFilter(ctx context.Context, DB *sql.DB, filter web.FilterRequest) (int, error) {
-	stmt := `SELECT COUNT(*) FROM users WHERE name LIKE $1 AND jurusan LIKE $2 AND angkatan LIKE $3`
+	stmt := `SELECT COUNT(*) FROM users WHERE name LIKE $1 AND jurusan LIKE $2 AND jurusan LIKE $3 AND angkatan LIKE $4`
 
 	var count int
-	err := DB.QueryRowContext(ctx, stmt, "%"+filter.Name+"%", "%"+filter.Jurusan+"%", "%"+filter.Angkatan+"%").Scan(&count)
+	err := DB.QueryRowContext(ctx, stmt, "%"+filter.Name+"%", "%"+filter.Jurusan+"%", "%"+filter.Jurusan+"%", "%"+filter.Angkatan+"%").Scan(&count)
 
 	if err != nil {
 		return 0, err

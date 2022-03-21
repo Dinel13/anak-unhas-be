@@ -27,3 +27,12 @@ CREATE TABLE readed (
     time timeuuid,
     PRIMARY KEY ((to_user), id) )  ; 
 );
+
+CREATE TABLE anakunhas.message (     
+    from_user int,
+    to_user int,
+    read boolean,         
+    time timestamp,
+    body text,
+    PRIMARY KEY ((to_user, read), from_user, time) 
+) WITH CLUSTERING ORDER BY (from_user DESC, time DESC);

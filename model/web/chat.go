@@ -1,7 +1,7 @@
 package web
 
 import (
-	"github.com/gocql/gocql"
+	"time"
 )
 
 type NotifCreate struct { //from fronend
@@ -21,9 +21,9 @@ type NotifResponse struct {
 }
 
 type Message struct {
-	Id   gocql.UUID `json:"id"`
-	From int        `json:"from"`
-	To   int        `json:"to"`
-	Body string     `json:"body"`
-	Time gocql.UUID `json:"time"`
+	From int       `json:"from"`
+	To   int       `json:"to"`
+	Read bool      `json:"read"`
+	Time time.Time `json:"time"`
+	Body string    `json:"body"`
 }

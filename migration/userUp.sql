@@ -13,7 +13,7 @@ CREATE TABLE "users" (
   "ig" varchar DEFAULT NULL,
   "bio" varchar DEFAULT NULL,
   "tertarik" varchar DEFAULT NULL,
-  "angkatan" INT DEFAULT NULL,
+  "angkatan" VARCHAR DEFAULT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );

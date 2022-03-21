@@ -17,12 +17,12 @@ func NewChatRepository() domain.ChatRepository {
 }
 
 func (m *chatRepositoryImpl) GetTotalNewChat(session *gocql.Session, userId int) (int, error) {
-	smtn := `SELECT COUNT(*) FROM messages WHERE to_user = ?`
+	smtn := `SELECT COUNT(*) FROM message WHERE to_user = ? AND read = ?`
 
 	var chat int
 	// uuid := gocql.TimeUUID()
 
-	err := session.Query(smtn, userId).Scan(&chat)
+	err := session.Query(smtn, userId, false).Scan(&chat)
 	if err != nil {
 		return 0, err
 	}
@@ -31,9 +31,9 @@ func (m *chatRepositoryImpl) GetTotalNewChat(session *gocql.Session, userId int)
 
 //SaveChat to cassandra
 func (m *chatRepositoryImpl) SaveChat(session *gocql.Session, chat web.Message) error {
-	smtn := `INSERT INTO messages (id, from_user, to_user, body, time) VALUES (?, ?, ?, ?, ?)`
+	smtn := `INSERT INTO message (from_user, to_user, read, time, body) VALUES (?, ?, ?, ?, ?)`
 
-	err := session.Query(smtn, chat.Id, chat.From, chat.To, chat.Body, chat.Time).Exec()
+	err := session.Query(smtn, chat.From, chat.To, chat.Body, chat.Time).Exec()
 
 	return err
 }

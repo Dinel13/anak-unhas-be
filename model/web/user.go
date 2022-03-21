@@ -29,7 +29,7 @@ type UserSortResponse struct {
 	Name     string  `json:"name"`
 	Image    *string `json:"image"`
 	Jurusan  *string `json:"jurusan"`
-	Angkatan *int    `json:"angkatan"`
+	Angkatan *string `json:"angkatan"`
 }
 
 type UserDetailResponse struct {

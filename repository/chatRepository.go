@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"log"
 	"strconv"
 
 	"github.com/dinel13/anak-unhas-be/model/domain"
@@ -55,7 +54,6 @@ func (m *chatRepositoryImpl) GetUnreadChat(session *gocql.Session, to, from int)
 		}
 		chats = append(chats, &chat)
 	}
-	log.Println(chats)
 
 	return chats, nil
 }
@@ -76,7 +74,6 @@ func (m *chatRepositoryImpl) GetReadChat(session *gocql.Session, to, from int) (
 		}
 		chats = append(chats, &chat)
 	}
-	log.Println(chats)
 
 	return chats, nil
 }
@@ -105,7 +102,7 @@ func (m *chatRepositoryImpl) MakeChatRead(session *gocql.Session, to, from int) 
 	smtn := `UPDATE message SET read = ? WHERE id = ? AND read = ?`
 	id := generateId(to, from)
 
-	err := session.Query(smtn, id, true).Exec()
+	err := session.Query(smtn, true, id, false).Exec()
 
 	return err
 }

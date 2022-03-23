@@ -16,32 +16,32 @@ func NewRouter(
 	r := httprouter.New()
 
 	//static files image user
-	r.ServeFiles("/images/user/*filepath", http.Dir("images/user"))
-	r.ServeFiles("/images/course/*filepath", http.Dir("images/course"))
+	r.ServeFiles("/unhas/images/user/*filepath", http.Dir("images/user"))
+	r.ServeFiles("/unhas/images/course/*filepath", http.Dir("images/course"))
 
 	// User
-	r.POST("/user", uc.Create)
-	r.PUT("/user", uc.Update)
-	r.POST("/user/login", uc.Login)
-	r.GET("/user/token", uc.Token) //verivy is token is valid
-	r.PUT("/user/image", uc.UpdateImage)
-	r.POST("/user/forgot-password", uc.ForgetPassword)
-	r.PUT("/user/reset-password", uc.UpdatePassword)
-	r.GET("/user/detail/:userId", uc.Detail)
-	r.GET("/user/myaccount/:userId", uc.Detail)
-	r.POST("/user/outh/login", uc.LoginGoogle)
-	r.GET("/user/phone/:userId", uc.GetPhone)
-	r.GET("/user/address/:userId", uc.GetAddress)
+	r.POST("/unhas/user", uc.Create)
+	r.PUT("/unhas/user", uc.Update)
+	r.POST("/unhas/user/login", uc.Login)
+	r.GET("/unhas/user/token", uc.Token) //verivy is token is valid
+	r.PUT("/unhas/user/image", uc.UpdateImage)
+	r.POST("/unhas/user/forgot-password", uc.ForgetPassword)
+	r.PUT("/unhas/user/reset-password", uc.UpdatePassword)
+	r.GET("/unhas/user/detail/:userId", uc.Detail)
+	r.GET("/unhas/user/myaccount/:userId", uc.Detail)
+	r.POST("/unhas/user/outh/login", uc.LoginGoogle)
+	r.GET("/unhas/user/phone/:userId", uc.GetPhone)
+	r.GET("/unhas/user/address/:userId", uc.GetAddress)
 
-	r.GET(("/users/search"), uc.Search)
-	r.POST(("/users/filter"), uc.Filter)
+	r.GET(("/unhas/users/search"), uc.Search)
+	r.POST(("/unhas/users/filter"), uc.Filter)
 
 	// Chat
-	r.GET("/ws/:userId", otc.ConnectWS)                         // websocket notif
-	r.GET("/chat/friends/:userId", otc.GetAllFriend)            //get all friend
-	r.GET("/chat/unreads/:userId/:friendId", otc.GetUnreadChat) //get all unread chat
-	r.GET("/chat/reads/:userId/:frinedId", otc.GetReadChat)     //get all read chat
-	r.PUT("/chat/read", otc.MakeChatRead)                       //make chat read
+	r.GET("/unhas/ws/:userId", otc.ConnectWS)                         // websocket notif
+	r.GET("/unhas/chat/friends/:userId", otc.GetAllFriend)            //get all friend
+	r.GET("/unhas/chat/unreads/:userId/:friendId", otc.GetUnreadChat) //get all unread chat
+	r.GET("/unhas/chat/reads/:userId/:friendId", otc.GetReadChat)     //get all read chat
+	r.PUT("/unhas/chat/read", otc.MakeChatRead)                       //make chat read
 
 	// conver httproter handeler to http handler
 	rr := newServer(r)

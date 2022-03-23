@@ -2,11 +2,24 @@ package repository
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/dinel13/anak-unhas-be/model/domain"
 	"github.com/dinel13/anak-unhas-be/model/web"
 	"github.com/gocql/gocql"
 )
+
+func generateId(to, from int) string {
+	var id string
+	fromStr := strconv.Itoa(from)
+	toStr := strconv.Itoa(to)
+	if to > from {
+		id = fromStr + toStr
+	} else {
+		id = toStr + fromStr
+	}
+	return id
+}
 
 type chatRepositoryImpl struct {
 }
@@ -16,7 +29,7 @@ func NewChatRepository() domain.ChatRepository {
 }
 
 func (m *chatRepositoryImpl) GetTotalNewChat(session *gocql.Session, userId int) (int, error) {
-	smtn := `SELECT COUNT(*) FROM message WHERE to_user = ? AND read = ?`
+	smtn := `SELECT COUNT(*) FROM message WHERE to_user = ? AND read = ? ALLOW FILTERING`
 
 	var chat int
 	err := session.Query(smtn, userId, false).Scan(&chat)
@@ -28,20 +41,16 @@ func (m *chatRepositoryImpl) GetTotalNewChat(session *gocql.Session, userId int)
 
 // get unread chat from specific sender
 func (m *chatRepositoryImpl) GetUnreadChat(session *gocql.Session, to, from int) ([]*web.Message, error) {
-	smtn := `SELECT from_user, to_user, read, time, body FROM message 
-				WHERE to_user in (?,?) AND from_user in (?,?) AND read = ?
-				`
+	smtn := `SELECT id, from_user, to_user, read, time, body FROM message 
+				WHERE id = ? AND read = ?`
 
 	var chats []*web.Message
+	id := generateId(to, from)
 
-	log.Println(to, from)
-
-	// OR to_user = ? AND from_user = ?`
-
-	iter := session.Query(smtn, to, from, from, to, false).Iter()
+	iter := session.Query(smtn, id, false).Iter()
 	for {
 		var chat web.Message
-		if !iter.Scan(&chat.From, &chat.To, &chat.Read, &chat.Time, &chat.Body) {
+		if !iter.Scan(&chat.Id, &chat.From, &chat.To, &chat.Read, &chat.Time, &chat.Body) {
 			break
 		}
 		chats = append(chats, &chat)
@@ -53,27 +62,31 @@ func (m *chatRepositoryImpl) GetUnreadChat(session *gocql.Session, to, from int)
 
 //get read chat from specific sender
 func (m *chatRepositoryImpl) GetReadChat(session *gocql.Session, to, from int) ([]*web.Message, error) {
-	smtn := `SELECT from_user, to_user, read, time, body FROM message
-				WHERE to_user in (?,?) AND from_user in (?,?) AND read = ?`
+	smtn := `SELECT id, from_user, to_user, read, time, body FROM message 
+				WHERE id = ? AND read = ?`
 
 	var chats []*web.Message
+	id := generateId(to, from)
 
-	iter := session.Query(smtn, to, from, to, from, true).Iter()
+	iter := session.Query(smtn, id, true).Iter()
 	for {
 		var chat web.Message
-		if !iter.Scan(&chat.From, &chat.To, &chat.Read, &chat.Time, &chat.Body) {
+		if !iter.Scan(&chat.Id, &chat.From, &chat.To, &chat.Read, &chat.Time, &chat.Body) {
 			break
 		}
 		chats = append(chats, &chat)
 	}
+	log.Println(chats)
+
 	return chats, nil
 }
 
 //SaveChat to cassandra
 func (m *chatRepositoryImpl) SaveChat(session *gocql.Session, chat web.Message) error {
-	smtn := `INSERT INTO message (from_user, to_user, read, time, body) VALUES (?, ?, ?, ?, ?)`
+	smtn := `INSERT INTO message (id, from_user, to_user, read, time, body) VALUES (?, ?, ?, ?, ?, ?)`
+	id := generateId(chat.To, chat.From)
 
-	err := session.Query(smtn, chat.From, chat.To, false, chat.Time, chat.Body).Exec()
+	err := session.Query(smtn, id, chat.From, chat.To, false, chat.Time, chat.Body).Exec()
 
 	return err
 }
@@ -89,9 +102,10 @@ func (m *chatRepositoryImpl) SaveOrUpdateTimeFriend(session *gocql.Session, frie
 
 // make chat read
 func (m *chatRepositoryImpl) MakeChatRead(session *gocql.Session, to, from int) error {
-	smtn := `UPDATE message SET read = ? WHERE to_user = ? AND from_user = ?`
+	smtn := `UPDATE message SET read = ? WHERE id = ? AND read = ?`
+	id := generateId(to, from)
 
-	err := session.Query(smtn, true, to, from).Exec()
+	err := session.Query(smtn, id, true).Exec()
 
 	return err
 }

@@ -21,6 +21,7 @@ type NotifResponse struct {
 }
 
 type Message struct {
+	Id   string    `json:"id"`
 	From int       `json:"from"`
 	To   int       `json:"to"`
 	Read bool      `json:"read"`

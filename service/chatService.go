@@ -64,7 +64,6 @@ func (s *chatServiceImpl) ConnectWS(ctx context.Context, currentGorillaConn *web
 				err = s.ChatRepository.SaveChat(s.csdrSession, chat)
 				if err != nil {
 					fmt.Println("failed save chat", chat, err)
-					return
 				}
 
 				// update time friend
@@ -76,7 +75,6 @@ func (s *chatServiceImpl) ConnectWS(ctx context.Context, currentGorillaConn *web
 				})
 				if err != nil {
 					fmt.Println("failed save time friend", chat, err)
-					return
 				}
 			}
 			// make chat read
@@ -84,7 +82,6 @@ func (s *chatServiceImpl) ConnectWS(ctx context.Context, currentGorillaConn *web
 				err = s.ChatRepository.MakeChatRead(s.csdrSession, chat.From, chat.To)
 				if err != nil {
 					fmt.Println("failed make chat read", chat, err)
-					return
 				}
 			}
 

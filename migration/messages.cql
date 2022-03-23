@@ -29,13 +29,14 @@ CREATE TABLE readed (
 );
 
 CREATE TABLE anakunhas.message (     
+    id varchar,
     from_user int,
     to_user int,
     read boolean,         
     time timestamp,
     body text,
-    PRIMARY KEY ((to_user, read), from_user, time) 
-) WITH CLUSTERING ORDER BY (from_user DESC, time ASC);
+    PRIMARY KEY ((id,  read), time) 
+) WITH CLUSTERING ORDER BY (time ASC);
 
 CREATE TABLE anakunhas.friend (     
     user int,

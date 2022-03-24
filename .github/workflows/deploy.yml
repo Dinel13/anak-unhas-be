@@ -28,4 +28,4 @@ jobs:
           script: |
             cd /var/www/anak-unhas
             git pull origin main
-            systemctl restart lanjukang
+            systemctl restart anakunhas

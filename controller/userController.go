@@ -24,9 +24,13 @@ func NewUserController(UserService domain.UserService) domain.UserController {
 
 func (m *UserControllerImpl) Create(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	userCreateRequest := web.UserCreateRequest{}
-	helper.ReadJson(r, &userCreateRequest)
+	err := helper.ReadJson(r, &userCreateRequest)
+	if err != nil {
+		helper.WriteJsonError(w, err, http.StatusInternalServerError)
+		return
+	}
 
-	err := m.UserService.IsExits(r.Context(), userCreateRequest.Email)
+	err = m.UserService.IsExits(r.Context(), userCreateRequest.Email)
 	if err != nil {
 		helper.WriteJsonError(w, errors.New("email already exists"))
 		return
@@ -42,7 +46,11 @@ func (m *UserControllerImpl) Create(w http.ResponseWriter, r *http.Request, p ht
 
 func (m *UserControllerImpl) Login(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	user := web.UserLoginRequest{}
-	helper.ReadJson(r, &user)
+	err := helper.ReadJson(r, &user)
+	if err != nil {
+		helper.WriteJsonError(w, err, http.StatusInternalServerError)
+		return
+	}
 
 	userData, err := m.UserService.Login(r.Context(), user)
 	if err != nil {
@@ -54,7 +62,11 @@ func (m *UserControllerImpl) Login(w http.ResponseWriter, r *http.Request, p htt
 
 func (m *UserControllerImpl) LoginGoogle(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	user := web.UserAuthGoogle{}
-	helper.ReadJson(r, &user)
+	err := helper.ReadJson(r, &user)
+	if err != nil {
+		helper.WriteJsonError(w, err, http.StatusInternalServerError)
+		return
+	}
 
 	userData, err := m.UserService.LoginGoogle(r.Context(), user)
 	if err != nil {

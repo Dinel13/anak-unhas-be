@@ -154,7 +154,7 @@ func (s *chatServiceImpl) GetAllFriend(ctx context.Context, userId int) ([]*web.
 	// return s.ChatRepository.GetAllFriend(s.csdrSession, userId)
 
 	// for mongo
-	return s.repoMongo.GetAllFriend(ctx, s.frnCltn, userId)
+	return s.repoMongo.GetAllFriend(ctx, s.dbPostgres, s.frnCltn, userId)
 }
 
 // get unread chat from specific friend

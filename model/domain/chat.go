@@ -29,7 +29,7 @@ type ChatRepoMongo interface {
 	SaveChat(ctx context.Context, chatCltn *mongo.Collection, chat web.Message) error
 	SaveOrUpdateTimeFriend(ctx context.Context, dbPostgres *sql.DB, frnCltn *mongo.Collection, friend web.Friend) error
 	MakeChatRead(ctx context.Context, chatCltn *mongo.Collection, to, from int) error
-	GetAllFriend(ctx context.Context, frnCltn *mongo.Collection, userId int) ([]*web.Friend, error)
+	GetAllFriend(ctx context.Context, dbPostgres *sql.DB, frnCltn *mongo.Collection, userId int) ([]*web.Friend, error)
 }
 
 type ChatService interface {

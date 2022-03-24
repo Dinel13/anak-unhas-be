@@ -140,8 +140,7 @@ func (m *chatRepositoryImpl) SaveOrUpdateTimeFriend(ctx context.Context, dbPostg
 	id := generateId(friend.MyId, friend.FrnId)
 
 	selector := bson.M{
-		"id":    id,
-		"my_id": friend.MyId,
+		"id": id,
 	}
 
 	// if image is empty then query imge from postgres
@@ -217,22 +216,22 @@ func (m *chatRepositoryImpl) MakeChatRead(ctx context.Context, chatCltn *mongo.C
 }
 
 // get all friend
-func (m *chatRepositoryImpl) GetAllFriend(ctx context.Context, frnCltn *mongo.Collection, userId int) ([]*web.Friend, error) {
+func (m *chatRepositoryImpl) GetAllFriend(ctx context.Context, dbPostgres *sql.DB, frnCltn *mongo.Collection, userId int) ([]*web.Friend, error) {
 	// // filter if user id equal to my id or frn id
-	// filter := bson.M{
-	// 	"$or": []bson.M{
-	// 		bson.M{
-	// 			"my_id": userId,
-	// 		},
-	// 		bson.M{
-	// 			"frn_id": userId,
-	// 		},
-	// 	},
-	// }
-
 	filter := bson.M{
-		"my_id": userId,
+		"$or": []bson.M{
+			bson.M{
+				"my_id": userId,
+			},
+			bson.M{
+				"frn_id": userId,
+			},
+		},
 	}
+
+	// filter := bson.M{
+	// 	"my_id": userId,
+	// }
 
 	csr, err := frnCltn.Find(ctx, filter)
 	if err != nil {
@@ -249,10 +248,17 @@ func (m *chatRepositoryImpl) GetAllFriend(ctx context.Context, frnCltn *mongo.Co
 			log.Println("error decode", err)
 			return nil, err
 		}
-		// if friend.FrnId == userId {
-		// 	friend.FrnName = "Teman Kamu"
-		// 	friend.FrnImage = ""
-		// }
+		if friend.FrnId == userId {
+			stmt := `SELECT image, name FROM users WHERE id = $1`
+			var image, name string
+			err = dbPostgres.QueryRow(stmt, friend.MyId).Scan(&image, &name)
+			if err != nil {
+				log.Println("error query image", err)
+				continue
+			}
+			friend.FrnName = name
+			friend.FrnImage = image
+		}
 
 		friends = append(friends, &friend)
 	}

@@ -218,6 +218,18 @@ func (m *chatRepositoryImpl) MakeChatRead(ctx context.Context, chatCltn *mongo.C
 
 // get all friend
 func (m *chatRepositoryImpl) GetAllFriend(ctx context.Context, frnCltn *mongo.Collection, userId int) ([]*web.Friend, error) {
+	// // filter if user id equal to my id or frn id
+	// filter := bson.M{
+	// 	"$or": []bson.M{
+	// 		bson.M{
+	// 			"my_id": userId,
+	// 		},
+	// 		bson.M{
+	// 			"frn_id": userId,
+	// 		},
+	// 	},
+	// }
+
 	filter := bson.M{
 		"my_id": userId,
 	}
@@ -237,6 +249,11 @@ func (m *chatRepositoryImpl) GetAllFriend(ctx context.Context, frnCltn *mongo.Co
 			log.Println("error decode", err)
 			return nil, err
 		}
+		// if friend.FrnId == userId {
+		// 	friend.FrnName = "Teman Kamu"
+		// 	friend.FrnImage = ""
+		// }
+
 		friends = append(friends, &friend)
 	}
 

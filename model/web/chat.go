@@ -32,7 +32,7 @@ type Message struct {
 type Friend struct {
 	Id       string    `json:"id" bson:"id"`
 	MyId     int       `json:"my_id" bson:"my_id"`
-	FrnId    int       `json:"fren_id" bson:"fren_id"`
+	FrnId    int       `json:"frn_id" bson:"frn_id"`
 	Time     time.Time `json:"time" bson:"time"`
 	Message  string    `json:"message" bson:"message"`
 	FrnImage string    `json:"frn_image" bson:"frn_image"`

@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 	"github.com/dinel13/anak-unhas-be/controller"
 	"github.com/dinel13/anak-unhas-be/helper"
 	"github.com/dinel13/anak-unhas-be/repository"
+	"github.com/dinel13/anak-unhas-be/repository/repomongo"
 	"github.com/dinel13/anak-unhas-be/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
@@ -73,9 +75,15 @@ func setupRouter(db *sql.DB) http.Handler {
 	}
 	defer dbCsdra.Close()
 
+	dbMongo, err := app.NewDBMongo(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// chat
 	chatRepo := repository.NewChatRepository()
-	chatService := service.NewChatService(chatRepo, db, dbCsdra, validate)
+	repoMongo := repomongo.NewChatRepository()
+	chatService := service.NewChatService(chatRepo, repoMongo, db, dbCsdra, dbMongo, validate)
 	chatController := controller.NewChatController(chatService)
 
 	route := app.NewRouter(userController, chatController)

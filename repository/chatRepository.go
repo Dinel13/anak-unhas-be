@@ -92,7 +92,7 @@ func (m *chatRepositoryImpl) SaveChat(session *gocql.Session, chat web.Message) 
 func (m *chatRepositoryImpl) SaveOrUpdateTimeFriend(session *gocql.Session, friend web.Friend) error {
 	smtn := `UPDATE friend SET time = ?, last_message = ? WHERE user = ? AND friend = ?`
 
-	err := session.Query(smtn, friend.Time, friend.LastMessage, friend.User, friend.Friend).Exec()
+	err := session.Query(smtn, friend.Time, friend.Message, friend.MyId, friend.FrnId).Exec()
 
 	return err
 }
@@ -117,7 +117,7 @@ func (m *chatRepositoryImpl) GetAllFriend(session *gocql.Session, userId int) ([
 	iter := session.Query(smtn, userId).Iter()
 	for {
 		var friend web.Friend
-		if !iter.Scan(&friend.User, &friend.Friend, &friend.Time, &friend.LastMessage) {
+		if !iter.Scan(&friend.MyId, &friend.FrnId, &friend.Time, &friend.Message) {
 			break
 		}
 		friends = append(friends, &friend)

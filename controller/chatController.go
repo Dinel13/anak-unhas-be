@@ -70,7 +70,7 @@ func (m *chatControllerImpl) MakeChatRead(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = m.ChatService.MakeChatRead(r.Context(), friend.User, friend.Friend)
+	err = m.ChatService.MakeChatRead(r.Context(), friend.MyId, friend.FrnId)
 	if err != nil {
 		helper.WriteJsonError(w, err, http.StatusInternalServerError)
 		return

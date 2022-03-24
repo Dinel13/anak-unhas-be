@@ -4,7 +4,7 @@ CREATE TABLE "users" (
   "password" varchar NOT NULL,
   "email" varchar NOT NULL,
   "verified" boolean NOT NULL DEFAULT false,
-  "image" varchar DEFAULT NULL,
+  "image" varchar DEFAULT '',
   "wa" varchar DEFAULT NULL,
   "gender" varchar DEFAULT NULL,
   "address" varchar DEFAULT NULL,

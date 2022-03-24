@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,8 +11,10 @@ import (
 	"github.com/dinel13/anak-unhas-be/controller"
 	"github.com/dinel13/anak-unhas-be/helper"
 	"github.com/dinel13/anak-unhas-be/repository"
+	"github.com/dinel13/anak-unhas-be/repository/repomongo"
 	"github.com/dinel13/anak-unhas-be/service"
 	"github.com/go-playground/validator/v10"
+	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
 )
 
@@ -34,11 +37,17 @@ func main() {
 	}
 	defer db.Close()
 
-	dbCsdra, err := app.NewDBCassandra("anakunhas")
+	// dbCsdra, err := app.NewDBCassandra("anakunhas")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer dbCsdra.Close()
+	var dbCsdra = &gocql.Session{} // supaya tidak perlu koneksi ke cassandra
+
+	dbMongo, err := app.NewDBMongo(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer dbCsdra.Close()
 
 	// google oauth
 	gId := os.Getenv("ID_G")
@@ -55,7 +64,8 @@ func main() {
 
 	// chat
 	chatRepo := repository.NewChatRepository()
-	chatService := service.NewChatService(chatRepo, db, dbCsdra, validate)
+	repoMongo := repomongo.NewChatRepository()
+	chatService := service.NewChatService(chatRepo, repoMongo, db, dbCsdra, dbMongo, validate)
 	chatController := controller.NewChatController(chatService)
 
 	route := app.NewRouter(userController, chatController)

@@ -21,17 +21,20 @@ type NotifResponse struct {
 }
 
 type Message struct {
-	Id   string    `json:"id"`
-	From int       `json:"from"`
-	To   int       `json:"to"`
-	Read bool      `json:"read"`
-	Time time.Time `json:"time"`
-	Body string    `json:"body"`
+	Id   string    `json:"id" bson:"id"`
+	From int       `json:"from" bson:"from"`
+	To   int       `json:"to" bson:"to"`
+	Read bool      `json:"read" bson:"read"`
+	Time time.Time `json:"time" bson:"time"`
+	Body string    `json:"body" bson:"body"`
 }
 
 type Friend struct {
-	User        int       `json:"user"`
-	Friend      int       `json:"friend"`
-	Time        time.Time `json:"time"`
-	LastMessage string    `json:"last_message"`
+	Id       string    `json:"id" bson:"id"`
+	MyId     int       `json:"my_id" bson:"my_id"`
+	FrnId    int       `json:"fren_id" bson:"fren_id"`
+	Time     time.Time `json:"time" bson:"time"`
+	Message  string    `json:"message" bson:"message"`
+	FrnImage string    `json:"frn_image" bson:"frn_image"`
+	FrnName  string    `json:"frn_name" bson:"frn_name"`
 }

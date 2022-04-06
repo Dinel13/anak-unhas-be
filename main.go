@@ -11,8 +11,10 @@ import (
 	"github.com/dinel13/anak-unhas-be/controller"
 	"github.com/dinel13/anak-unhas-be/helper"
 	"github.com/dinel13/anak-unhas-be/repository"
+	"github.com/dinel13/anak-unhas-be/repository/elastic"
 	"github.com/dinel13/anak-unhas-be/repository/repomongo"
 	"github.com/dinel13/anak-unhas-be/service"
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/go-playground/validator/v10"
 	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
@@ -49,6 +51,17 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// elastic search
+	esHost := os.Getenv("ES_host")
+	esPort := os.Getenv("ES_port")
+	esURL := fmt.Sprintf("http://%s:%s", esHost, esPort)
+	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: []string{esURL},
+	})
+	if err != nil {
+		log.Fatal("cannot connect es", err)
+	}
+
 	// google oauth
 	gId := os.Getenv("ID_G")
 	gSecret := os.Getenv("SECRET_G")
@@ -58,8 +71,9 @@ func main() {
 	validate := validator.New()
 
 	// user
+	esRepo := elastic.NewElasticRepository(esClient)
 	userRepository := repository.NewUserRepository()
-	userService := service.NewUserService(userRepository, db, validate, googleCred)
+	userService := service.NewUserService(userRepository, esRepo, db, validate, googleCred)
 	userController := controller.NewUserController(userService)
 
 	// chat

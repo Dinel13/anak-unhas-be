@@ -19,14 +19,16 @@ type UserServiceImpl struct {
 	DB             *sql.DB
 	Validate       *validator.Validate
 	googleCred     *domain.GoogleCred
+	esRepo         domain.ESRepository
 }
 
-func NewUserService(UserRepository domain.UserRepository, DB *sql.DB, validate *validator.Validate, gCred *domain.GoogleCred) domain.UserService {
+func NewUserService(UserRepository domain.UserRepository, esRepo domain.ESRepository, DB *sql.DB, validate *validator.Validate, gCred *domain.GoogleCred) domain.UserService {
 	return &UserServiceImpl{
 		UserRepository: UserRepository,
 		DB:             DB,
 		Validate:       validate,
 		googleCred:     gCred,
+		esRepo:         esRepo,
 	}
 }
 
@@ -65,6 +67,11 @@ func (s *UserServiceImpl) Create(ctx context.Context, user web.UserCreateRequest
 	if err != nil {
 		return nil, err
 	}
+
+	go s.esRepo.Create(ctx, web.UserCreateEs{
+		Id:   newUser.Id,
+		Name: newUser.Name,
+	})
 
 	newUser.Token = token
 	return newUser, nil
@@ -154,6 +161,11 @@ func (s *UserServiceImpl) LoginGoogle(ctx context.Context, req web.UserAuthGoogl
 				return nil, err
 			}
 
+			go s.esRepo.Create(ctx, web.UserCreateEs{
+				Id:   userRespon.Id,
+				Name: userRespon.Name,
+			})
+
 			userRespon.Token = token
 
 			return userRespon, nil
@@ -209,6 +221,14 @@ func (s *UserServiceImpl) Update(ctx context.Context, user web.UserUpdateRequest
 		return nil, err
 	}
 	defer helper.CommitOrRollback(tx)
+
+	go s.esRepo.Update(ctx, web.UserCreateEs{
+		Id:       user.Id,
+		Name:     user.Name,
+		Jurusan:  user.Jurusan,
+		Angkatan: user.Angkatan,
+		Fakultas: user.Fakultas,
+	})
 
 	userUpdated, err := s.UserRepository.Update(ctx, tx, user)
 	if err != nil {

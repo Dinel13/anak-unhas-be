@@ -67,3 +67,25 @@ type UserRepository interface {
 	TotalResultSearch(context.Context, *sql.DB, string) (int, error)
 	TotalResultFilter(context.Context, *sql.DB, web.FilterRequest) (int, error)
 }
+
+type ESRepository interface {
+	Create(context.Context, web.UserCreateEs) error
+	Update(context.Context, web.UserCreateEs) error
+	Search(context.Context, string, string, int) (*SearchResponse, error)
+}
+
+type SearchResponse struct {
+	Hits struct {
+		Total int
+		Hits  []struct {
+			ID     string
+			Source struct {
+				Name    string
+				Email   string
+				Phone   string
+				Address string
+				Image   string
+			}
+		}
+	}
+}

@@ -110,3 +110,14 @@ type SearchResponse struct {
 	Total int                 `json:"total"`
 	Users []*UserSortResponse `json:"users"`
 }
+
+type UserCreateEs struct {
+	Id       int
+	Name     string
+	Gender   string
+	Jurusan  string
+	Fakultas string
+	Address  string
+	Angkatan string
+	Tertarik string
+}

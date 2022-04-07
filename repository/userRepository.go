@@ -99,10 +99,11 @@ func (m *userRepositoryImpl) GetByEmail(ctx context.Context, tx *sql.DB, email s
 
 	err := tx.QueryRowContext(ctx, stmt, email).Scan(&user.Id, &user.Name, &user.Password)
 
-	if err == sql.ErrNoRows {
-		return nil, errors.New("email tidak ditemukan")
-	}
+
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 

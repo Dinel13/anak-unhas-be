@@ -12,29 +12,25 @@ import (
 	"github.com/dinel13/anak-unhas-be/model/domain"
 	"github.com/dinel13/anak-unhas-be/model/web"
 	"github.com/go-playground/validator/v10"
-	"github.com/gocql/gocql"
-	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type chatServiceImpl struct {
 	ChatRepository domain.ChatRepository
 	Validate       *validator.Validate
-	csdrSession    *gocql.Session
 	repoMongo      domain.ChatRepoMongo
 	chatCltn       *mongo.Collection
 	frnCltn        *mongo.Collection
 	dbPostgres     *sql.DB
 }
 
-func NewChatService(ChatRepository domain.ChatRepository, repoMongo domain.ChatRepoMongo, DB *sql.DB, csdr *gocql.Session, mongo *mongo.Client, validate *validator.Validate) domain.ChatService {
+func NewChatService(ChatRepository domain.ChatRepository, repoMongo domain.ChatRepoMongo, DB *sql.DB, mongo *mongo.Client, validate *validator.Validate) domain.ChatService {
 	chatCltn := mongo.Database("anak-unhas").Collection("message")
 	frnCltn := mongo.Database("anak-unhas").Collection("friend")
 
 	return &chatServiceImpl{
 		ChatRepository: ChatRepository,
 		Validate:       validate,
-		csdrSession:    csdr,
 		repoMongo:      repoMongo,
 		chatCltn:       chatCltn,
 		frnCltn:        frnCltn,
@@ -42,133 +38,96 @@ func NewChatService(ChatRepository domain.ChatRepository, repoMongo domain.ChatR
 	}
 }
 
-func (s *chatServiceImpl) ConnectWS(ctx context.Context, currentGorillaConn *websocket.Conn, userId int, errChan chan error) {
-	currentConn := helper.WebSocketConnection{Conn: currentGorillaConn, UserId: userId}
-	helper.AllConnections = append(helper.AllConnections, &currentConn)
+// ListenWS is a goroutine that handles communication between server and client
+func (s *chatServiceImpl) ListenWS(ctx context.Context, conn *domain.WebSocketConnection) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Error", fmt.Sprintf("%v", r))
+		}
+	}()
 
-	go func(currentConn *helper.WebSocketConnection, connections []*helper.WebSocketConnection) {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Println("ERROR", fmt.Sprintf("%v", r))
-			}
-		}()
+	var payload web.WsPayload
 
-		for {
-			chat := web.Message{}
-			err := currentConn.ReadJSON(&chat)
-			// log.Println("chat", chat.To, chat.From)
-
-			// send to user and save to db and update time friend
-			if chat.To != 0 {
-				// send to friend
-				isUserActive := helper.SendMessageToUser(chat)
-				if !isUserActive {
-					log.Println("User is not active", chat.To)
-				}
-
-				// for cassandra
-				// err = s.ChatRepository.SaveChat(s.csdrSession, chat)
-				// if err != nil {
-				// 	fmt.Println("failed save chat", chat, err)
-				// }
-
-				// for mongo
-				err = s.repoMongo.SaveChat(ctx, s.chatCltn, chat)
-				if err != nil {
-					fmt.Println("failed save chat", chat, err)
-				}
-
-				friend := web.Friend{
-					MyId:    chat.From,
-					FrnId:   chat.To,
-					Time:    time.Now(),
-					Message: chat.Body,
-				}
-
-				// update time friend
-				// go func(friend web.Friend) {
-				// for cassandra
-				// err = s.ChatRepository.SaveOrUpdateTimeFriend(s.csdrSession, friend)
-				// if err != nil {
-				// 	fmt.Println("failed save time friend", chat, err)
-				// }
-
-				// for mongo
-				err = s.repoMongo.SaveOrUpdateTimeFriend(ctx, s.dbPostgres, s.frnCltn, friend)
-				if err != nil {
-					fmt.Println("failed save time friend", chat, err)
-				}
-				// }(friend)
-			}
-			// make chat read
-			if chat.Read {
-				// for cassandra
-				// err = s.ChatRepository.MakeChatRead(s.csdrSession, chat.From, chat.To)
-				// if err != nil {
-				// 	fmt.Println("failed make chat read", chat, err)
-				// }
-
-				// for mongo
-				err = s.repoMongo.MakeChatRead(ctx, s.chatCltn, chat.From, chat.To)
-				if err != nil {
-					fmt.Println("failed make chat read", chat, err)
-				}
-			}
-
-			if err != nil {
-				if strings.Contains(err.Error(), "websocket: close") {
-					helper.EjectConnection(currentConn)
-					return
-				}
-
-				log.Println("ERROR", err.Error())
+	for {
+		err := conn.ReadJSON(&payload)
+		if err != nil {
+			if strings.Contains(err.Error(), "websocket: close") {
+				helper.EjectConnection(conn)
 				continue
 			}
+			log.Println("ERROR", err.Error())
+			continue
+		} else {
+			if payload.To != 0 {
+				// send to friend
+				isUserActive := helper.SendMessageToUser(payload)
+				if !isUserActive {
+					log.Println("User is not active", payload.To)
+				}
+
+				err = s.repoMongo.SaveChat(ctx, s.chatCltn, &web.Message{
+					From: payload.From,
+					To: payload.To,
+					Message: payload.Message,
+					Read: false,
+					Time: time.Now(),
+				})
+				helper.PanicIfError(err)
+
+				err = s.repoMongo.SaveOrUpdateTimeFriend(ctx, s.dbPostgres, s.frnCltn, &web.Friend{
+					MyId:    payload.From,
+					FrnId:   payload.To,
+					Time:    time.Now(),
+					Message: payload.Message,
+				})
+				helper.PanicIfError(err)
+			}
 		}
-	}(&currentConn, helper.AllConnections)
-
-	// use cassandra
-	// numNotif, err := s.ChatRepository.GetTotalNewChat(s.csdrSession, userId)
-
-	// use mongo
-	numNotif, err := s.repoMongo.GetTotalNewChat(ctx, s.chatCltn, userId)
-	if err != nil {
-		errChan <- err
-		return
-	}
-
-	if numNotif > 0 {
-		helper.SendNotifToUser(userId, numNotif)
 	}
 }
 
-func (s *chatServiceImpl) MakeChatRead(ctx context.Context, userId int, friendId int) error {
+func (s *chatServiceImpl) GetTotalNewChat(ctx context.Context, userId int) *int {
+	newChat, err := s.repoMongo.GetTotalNewChat(ctx, s.chatCltn, userId)
+	helper.PanicIfError(err)
+
+	return &newChat
+}
+
+func (s *chatServiceImpl) MakeChatRead(ctx context.Context, rel *web.Relation) {
 	// for cassandra
 	// return s.ChatRepository.MakeChatRead(s.csdrSession, userId, friendId)
 
 	// for mongo
-	return s.repoMongo.MakeChatRead(ctx, s.chatCltn, userId, friendId)
+	 err := s.repoMongo.MakeChatRead(ctx, s.chatCltn, rel)
+	 helper.PanicIfError(err)
 }
 
-func (s *chatServiceImpl) GetAllFriend(ctx context.Context, userId int) ([]*web.Friend, error) {
+func (s *chatServiceImpl) GetAllFriend(ctx context.Context, userId int) []*web.Friend {
 	// return s.ChatRepository.GetAllFriend(s.csdrSession, userId)
 
 	// for mongo
-	return s.repoMongo.GetAllFriend(ctx, s.dbPostgres, s.frnCltn, userId)
+	friends, err := s.repoMongo.GetAllFriend(ctx, s.dbPostgres, s.frnCltn, userId)
+	helper.PanicIfError(err)
+
+	return friends
 }
 
-// get unread chat from specific friend
-func (s *chatServiceImpl) GetUnreadChat(ctx context.Context, userId int, friendId int) ([]*web.Message, error) {
+func (s *chatServiceImpl) GetUnreadChat(ctx context.Context, rel *web.Relation) []*web.Message {
 	// return s.ChatRepository.GetUnreadChat(s.csdrSession, userId, friendId)
 
 	// for mongo
-	return s.repoMongo.GetUnreadChat(ctx, s.chatCltn, userId, friendId)
+	messages, err := s.repoMongo.GetUnreadChat(ctx, s.chatCltn, rel)
+	helper.PanicIfError(err)
+
+	return  messages
 }
 
-// get read chat from specific friend
-func (s *chatServiceImpl) GetReadChat(ctx context.Context, userId int, friendId int) ([]*web.Message, error) {
+func (s *chatServiceImpl) GetReadChat(ctx context.Context, rel *web.Relation) []*web.Message {
 	// return s.ChatRepository.GetReadChat(s.csdrSession, userId, friendId)
 
 	// for mongo
-	return s.repoMongo.GetReadChat(ctx, s.chatCltn, userId, friendId)
+	messages, err := s.repoMongo.GetReadChat(ctx, s.chatCltn, rel)
+	helper.PanicIfError(err)
+
+	return  messages
 }

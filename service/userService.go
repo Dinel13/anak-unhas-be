@@ -72,8 +72,17 @@ func (s *UserServiceImpl) Login(ctx context.Context, req web.UserLoginRequest) *
 	err := s.Validate.Struct(req)
 	helper.PanicIfError(err)
 
+	// cek if email use domain student.unhas.ac.id
+	isDomainUnhas := helper.IsDomainUnhas(req.Email)
+	if !isDomainUnhas {
+		panic(exception.NewBadRequestError("Email harus berdomain student.unhas.ac.id"))
+	}
+
 	user, err := s.UserRepository.GetByEmail(ctx, s.DB, req.Email)
 	helper.PanicIfError(err)
+	if user == nil {
+		panic(exception.NewBadRequestError("Email tidak ditemukan"))
+	}
 
 	// check if the password is correct
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))

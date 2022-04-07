@@ -1,8 +1,6 @@
 package web
 
-import (
-	"time"
-)
+import "time"
 
 type NotifCreate struct { //from fronend
 	UserId  int    `json:"user_id"`
@@ -20,13 +18,33 @@ type NotifResponse struct {
 	ForId   *string `json:"for_id"`
 }
 
+type Relation struct {
+	MyId       int `json:"my_id" bson:"my_id"`
+	MyFriendId int `json:"my_friend_id" bson:"my_friend_id"`
+}
+
+// WsJsonResponse defines the response sent back from websocket
+type WsJsonResponse struct {
+	Action      string `json:"action"`
+	Message     string `json:"message"`
+	MessageType string `json:"message_type"`
+}
+
+// WsPayload defines the websocket request from the client
+type WsPayload struct {
+	Action   string                  `json:"action"`
+	Message  string                  `json:"message"`
+	From       int                     `json:"from"`
+	To       int                     `json:"to"`
+}
+
 type Message struct {
 	Id   string    `json:"id" bson:"id"`
 	From int       `json:"from" bson:"from"`
 	To   int       `json:"to" bson:"to"`
 	Read bool      `json:"read" bson:"read"`
+	Message  string                  `json:"message"`
 	Time time.Time `json:"time" bson:"time"`
-	Body string    `json:"body" bson:"body"`
 }
 
 type Friend struct {

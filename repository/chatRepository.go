@@ -49,7 +49,7 @@ func (m *chatRepositoryImpl) GetUnreadChat(session *gocql.Session, to, from int)
 	iter := session.Query(smtn, id, false).Iter()
 	for {
 		var chat web.Message
-		if !iter.Scan(&chat.Id, &chat.From, &chat.To, &chat.Read, &chat.Time, &chat.Body) {
+		if !iter.Scan(&chat.Id, &chat.From, &chat.To, &chat.Read, &chat.Time, &chat.Message) {
 			break
 		}
 		chats = append(chats, &chat)
@@ -69,7 +69,7 @@ func (m *chatRepositoryImpl) GetReadChat(session *gocql.Session, to, from int) (
 	iter := session.Query(smtn, id, true).Iter()
 	for {
 		var chat web.Message
-		if !iter.Scan(&chat.Id, &chat.From, &chat.To, &chat.Read, &chat.Time, &chat.Body) {
+		if !iter.Scan(&chat.Id, &chat.From, &chat.To, &chat.Read, &chat.Time, &chat.Message) {
 			break
 		}
 		chats = append(chats, &chat)
@@ -83,7 +83,7 @@ func (m *chatRepositoryImpl) SaveChat(session *gocql.Session, chat web.Message) 
 	smtn := `INSERT INTO message (id, from_user, to_user, read, time, body) VALUES (?, ?, ?, ?, ?, ?)`
 	id := generateId(chat.To, chat.From)
 
-	err := session.Query(smtn, id, chat.From, chat.To, false, chat.Time, chat.Body).Exec()
+	err := session.Query(smtn, id, chat.From, chat.To, false, chat.Time, chat.Message).Exec()
 
 	return err
 }

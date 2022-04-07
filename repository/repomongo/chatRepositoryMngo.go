@@ -52,8 +52,8 @@ func (m *chatRepositoryImpl) GetTotalNewChat(ctx context.Context, chatCltn *mong
 }
 
 // get unread chat from specific sender
-func (m *chatRepositoryImpl) GetUnreadChat(ctx context.Context, chatCltn *mongo.Collection, to, from int) ([]*web.Message, error) {
-	id := generateId(to, from)
+func (m *chatRepositoryImpl) GetUnreadChat(ctx context.Context, chatCltn *mongo.Collection, rel *web.Relation) ([]*web.Message, error) {
+	id := generateId(rel.MyFriendId, rel.MyId)
 	filter := bson.M{
 		"id": id,
 		"read": bson.M{
@@ -83,8 +83,8 @@ func (m *chatRepositoryImpl) GetUnreadChat(ctx context.Context, chatCltn *mongo.
 }
 
 //get read chat from specific sender
-func (m *chatRepositoryImpl) GetReadChat(ctx context.Context, chatCltn *mongo.Collection, to, from int) ([]*web.Message, error) {
-	id := generateId(to, from)
+func (m *chatRepositoryImpl) GetReadChat(ctx context.Context, chatCltn *mongo.Collection, rel *web.Relation) ([]*web.Message, error) {
+	id := generateId(rel.MyFriendId, rel.MyId)
 	filter := bson.M{
 		"id": id,
 		"read": bson.M{
@@ -114,13 +114,13 @@ func (m *chatRepositoryImpl) GetReadChat(ctx context.Context, chatCltn *mongo.Co
 }
 
 //SaveChat to cassandra
-func (m *chatRepositoryImpl) SaveChat(ctx context.Context, chatCltn *mongo.Collection, chat web.Message) error {
+func (m *chatRepositoryImpl) SaveChat(ctx context.Context, chatCltn *mongo.Collection, chat *web.Message) error {
 	id := generateId(chat.To, chat.From)
 	chatBson := bson.M{
 		"id":   id,
 		"to":   chat.To,
 		"from": chat.From,
-		"body": chat.Body,
+		"body": chat.Message,
 		"read": false,
 		"time": time.Now(),
 	}
@@ -136,7 +136,7 @@ func (m *chatRepositoryImpl) SaveChat(ctx context.Context, chatCltn *mongo.Colle
 }
 
 // save new frind or update time
-func (m *chatRepositoryImpl) SaveOrUpdateTimeFriend(ctx context.Context, dbPostgres *sql.DB, frnCltn *mongo.Collection, friend web.Friend) error {
+func (m *chatRepositoryImpl) SaveOrUpdateTimeFriend(ctx context.Context, dbPostgres *sql.DB, frnCltn *mongo.Collection, friend *web.Friend) error {
 	id := generateId(friend.MyId, friend.FrnId)
 
 	selector := bson.M{
@@ -192,8 +192,8 @@ func (m *chatRepositoryImpl) SaveOrUpdateTimeFriend(ctx context.Context, dbPostg
 }
 
 // make chat read
-func (m *chatRepositoryImpl) MakeChatRead(ctx context.Context, chatCltn *mongo.Collection, to, from int) error {
-	id := generateId(to, from)
+func (m *chatRepositoryImpl) MakeChatRead(ctx context.Context, chatCltn *mongo.Collection, rel *web.Relation) error {
+	id := generateId(rel.MyFriendId, rel.MyId)
 	filter := bson.M{
 		"id": id,
 		"read": bson.M{

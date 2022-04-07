@@ -14,7 +14,6 @@ import (
 	"github.com/dinel13/anak-unhas-be/repository/repomongo"
 	"github.com/dinel13/anak-unhas-be/service"
 	"github.com/go-playground/validator/v10"
-	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
 )
 
@@ -37,13 +36,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// dbCsdra, err := app.NewDBCassandra("anakunhas")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer dbCsdra.Close()
-	var dbCsdra = &gocql.Session{} // supaya tidak perlu koneksi ke cassandra
-
 	dbMongo, err := app.NewDBMongo(context.Background())
 	if err != nil {
 		log.Fatal("Cannot connect mongo ",err)
@@ -65,7 +57,7 @@ func main() {
 	// chat
 	chatRepo := repository.NewChatRepository()
 	repoMongo := repomongo.NewChatRepository()
-	chatService := service.NewChatService(chatRepo, repoMongo, db, dbCsdra, dbMongo, validate)
+	chatService := service.NewChatService(chatRepo, repoMongo, db, dbMongo, validate)
 	chatController := controller.NewChatController(chatService)
 
 	route := app.NewRouter(userController, chatController)

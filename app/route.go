@@ -1,12 +1,28 @@
 package app
 
 import (
+	"github.com/dinel13/anak-unhas-be/exception"
 	"net/http"
 
 	"github.com/dinel13/anak-unhas-be/middleware"
 	"github.com/dinel13/anak-unhas-be/model/domain"
 	"github.com/julienschmidt/httprouter"
 )
+
+// Server is a http.Handler
+type Server struct {
+	r *httprouter.Router
+}
+
+// ServeHTTP implements the http.Handler interface
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.r.ServeHTTP(w, r)
+}
+
+// newServer returns a new instance of Server
+func newServer(r *httprouter.Router) http.Handler {
+	return &Server{r: r}
+}
 
 func NewRouter(
 	uc domain.UserController,
@@ -30,8 +46,6 @@ func NewRouter(
 	r.GET("/unhas/user/detail/:userId", uc.Detail)
 	r.GET("/unhas/user/myaccount/:userId", uc.Detail)
 	r.POST("/unhas/user/outh/login", uc.LoginGoogle)
-	r.GET("/unhas/user/phone/:userId", uc.GetPhone)
-	r.GET("/unhas/user/address/:userId", uc.GetAddress)
 
 	r.GET(("/unhas/users/search"), uc.Search)
 	r.POST(("/unhas/users/filter"), uc.Filter)
@@ -43,23 +57,10 @@ func NewRouter(
 	r.GET("/unhas/chat/reads/:userId/:friendId", otc.GetReadChat)     //get all read chat
 	r.PUT("/unhas/chat/read", otc.MakeChatRead)                       //make chat read
 
-	// conver httproter handeler to http handler
+	r.PanicHandler = exception.ErrorHandler
+
+	// convert httprouter handler to http handler
 	rr := newServer(r)
 
 	return middleware.EnableCors(rr)
-}
-
-// Server is a http.Handler
-type Server struct {
-	r *httprouter.Router
-}
-
-// newServer returns a new instance of Server
-func newServer(r *httprouter.Router) http.Handler {
-	return &Server{r: r}
-}
-
-// ServeHTTP implements the http.Handler interface
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.r.ServeHTTP(w, r)
 }

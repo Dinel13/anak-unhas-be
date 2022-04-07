@@ -11,10 +11,8 @@ import (
 	"github.com/dinel13/anak-unhas-be/controller"
 	"github.com/dinel13/anak-unhas-be/helper"
 	"github.com/dinel13/anak-unhas-be/repository"
-	"github.com/dinel13/anak-unhas-be/repository/elastic"
 	"github.com/dinel13/anak-unhas-be/repository/repomongo"
 	"github.com/dinel13/anak-unhas-be/service"
-	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/go-playground/validator/v10"
 	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
@@ -23,7 +21,7 @@ import (
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file ", err)
 	}
 
 	// database
@@ -35,7 +33,7 @@ func main() {
 	dbconf := fmt.Sprintf("host=%s port=%s dbname=%s  user=%s password=%s sslmode=disable", dbhost, dbport, dbname, dbuser, dbpass)
 	db, err := app.NewDBpostgres(dbconf)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Cannot connect postges ",err)
 	}
 	defer db.Close()
 
@@ -48,18 +46,7 @@ func main() {
 
 	dbMongo, err := app.NewDBMongo(context.Background())
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	// elastic search
-	esHost := os.Getenv("ES_host")
-	esPort := os.Getenv("ES_port")
-	esURL := fmt.Sprintf("http://%s:%s", esHost, esPort)
-	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: []string{esURL},
-	})
-	if err != nil {
-		log.Fatal("cannot connect es", err)
+		log.Fatal("Cannot connect mongo ",err)
 	}
 
 	// google oauth
@@ -71,9 +58,8 @@ func main() {
 	validate := validator.New()
 
 	// user
-	esRepo := elastic.NewElasticRepository(esClient)
 	userRepository := repository.NewUserRepository()
-	userService := service.NewUserService(userRepository, esRepo, db, validate, googleCred)
+	userService := service.NewUserService(userRepository, db, validate, googleCred)
 	userController := controller.NewUserController(userService)
 
 	// chat
@@ -94,7 +80,6 @@ func main() {
 	}
 	err = server.ListenAndServe()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Cannot start listen and serve ", err)
 	}
-
 }

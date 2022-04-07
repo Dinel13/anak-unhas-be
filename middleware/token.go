@@ -18,11 +18,10 @@ func ChecToken(r *http.Request) (int, error) {
 	id, err := helper.ParseToken(tokenString)
 	if err != nil {
 		return 0, err
-
 	}
+
 	if id == 0 {
 		return 0, errors.New("invalid token")
-
 	}
 
 	return id, nil

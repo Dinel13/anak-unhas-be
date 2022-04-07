@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -40,7 +41,7 @@ func UploadedImage(uploadedImage multipart.File, header *multipart.FileHeader, f
 // DeleteImage is a function to delete image
 func DeleteImage(filename string, folder string) error {
 	if filename == "" {
-		return nil
+		return errors.New("filename empty")
 	}
 	dir, err := os.Getwd()
 	if err != nil {

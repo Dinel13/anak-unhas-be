@@ -24,10 +24,12 @@ func SendMessageToUser(payload web.WsPayload) bool {
 }
 
 func EjectConnection(conn *domain.WebSocketConnection) {
+	log.Println(len(domain.AllConnections))
 	for i, eachConn := range domain.AllConnections {
 		if eachConn.UserId == conn.UserId {
 			domain.AllConnections = append(domain.AllConnections[:i], domain.AllConnections[i+1:]...)
 			break
 		}
 	}
+	log.Println(len(domain.AllConnections))
 }

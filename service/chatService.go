@@ -52,8 +52,9 @@ func (s *chatServiceImpl) ListenWS(ctx context.Context, conn *domain.WebSocketCo
 		err := conn.ReadJSON(&payload)
 		if err != nil {
 			if strings.Contains(err.Error(), "websocket: close") {
+				log.Printf("CLient %d close connection", conn.UserId)
 				helper.EjectConnection(conn)
-				continue
+				return
 			}
 			log.Println("ERROR", err.Error())
 			continue

@@ -37,7 +37,7 @@ func (m *chatControllerImpl) ConnectWS(w http.ResponseWriter, r *http.Request, p
 	userIdInt, err := strconv.Atoi(userId)
 	helper.PanicIfError(err)
 
-	log.Printf("Client %d connected to endpoint", userIdInt)
+	log.Printf("Client %d connected to endpointt", userIdInt)
 
 	newConn := domain.WebSocketConnection{Conn: ws, UserId: userIdInt}
 	domain.AllConnections = append(domain.AllConnections, newConn)

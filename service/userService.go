@@ -3,8 +3,9 @@ package service
 import (
 	"context"
 	"database/sql"
-	"github.com/dinel13/anak-unhas-be/exception"
 	"log"
+
+	"github.com/dinel13/anak-unhas-be/exception"
 
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
@@ -232,22 +233,27 @@ func (s *UserServiceImpl) UpdatePassword(ctx context.Context, user web.UserUpdat
 }
 
 func (s *UserServiceImpl) UpdateImage(ctx context.Context, user web.UserUpdateImageRequest) *string {
-	defer func(filename string) {
-		errDel := helper.DeleteImage(filename, "user")
-		if errDel != nil {
-			log.Println(errDel.Error())
-		}
-	}(user.Image)
+	// defer func(filename string) {
+	// 	errDel := helper.DeleteImage(filename, "user")
+	// 	if errDel != nil {
+	// 		log.Println(errDel.Error())
+	// 	}
+	// }(user.Image)
 
 	err := s.Validate.Struct(user)
 	helper.PanicIfError(err)
-
 
 	tx, err := s.DB.Begin()
 	helper.PanicIfError(err)
 	defer helper.CommitOrRollback(tx)
 
 	err = s.UserRepository.UpdateImage(ctx, tx, user)
+	if err != nil {
+		errDel := helper.DeleteImage(user.Image, "user")
+		if errDel != nil {
+			log.Println(errDel.Error())
+		}
+	}
 	helper.PanicIfError(err)
 
 	return &user.Image
@@ -259,7 +265,6 @@ func (s *UserServiceImpl) GetImage(ctx context.Context, id int) *string {
 
 	return img
 }
-
 
 func (s *UserServiceImpl) Search(ctx context.Context, query web.SearchRequest) *web.SearchResponse {
 	users, err := s.UserRepository.Search(ctx, s.DB, query)

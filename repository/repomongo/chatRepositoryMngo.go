@@ -144,24 +144,22 @@ func (m *chatRepositoryImpl) SaveOrUpdateTimeFriend(ctx context.Context, dbPostg
 	}
 
 	// if image is empty then query imge from postgres
-	if friend.FrnImage == "" {
-		smtn := `SELECT image, name FROM users WHERE id = $1`
-		var image, name string
-		err := dbPostgres.QueryRow(smtn, friend.FrnId).Scan(&image, &name)
-		if err != nil {
-			log.Println("error query image", err)
-		}
-		friend.FrnImage = image
-		friend.FrnName = name
-	}
+	// if friend.FrnImage == "" {
+	// 	smtn := `SELECT image, name FROM users WHERE id = $1`
+	// 	var image, name string
+	// 	err := dbPostgres.QueryRow(smtn, friend.FrnId).Scan(&image, &name)
+	// 	if err != nil {
+	// 		log.Println("error query image", err)
+	// 	}
+	// 	friend.FrnImage = image
+	// 	friend.FrnName = name
+	// }
 
 	// if exist update time else insert
 	result, err := frnCltn.UpdateOne(ctx, selector, bson.M{
 		"$set": bson.M{
-			"time":      time.Now(),
-			"frn_image": friend.FrnImage,
-			"frn_name":  friend.FrnName,
-			"message":   friend.Message,
+			"time":    time.Now(),
+			"message": friend.Message,
 		}},
 	)
 	if err != nil {
@@ -169,21 +167,20 @@ func (m *chatRepositoryImpl) SaveOrUpdateTimeFriend(ctx context.Context, dbPostg
 		return err
 	}
 
+	// if not exist insert new data
 	if result.ModifiedCount == 0 {
 		// insert
 		chatBson := bson.M{
-			"id":        id,
-			"my_id":     friend.MyId,
-			"frn_id":    friend.FrnId,
-			"frn_image": friend.FrnImage,
-			"frn_name":  friend.FrnName,
-			"message":   friend.Message,
-			"time":      time.Now(),
+			"id":      id,
+			"my_id":   friend.MyId,
+			"frn_id":  friend.FrnId,
+			"message": friend.Message,
+			"time":    time.Now(),
 		}
 
 		_, err := frnCltn.InsertOne(ctx, chatBson)
 		if err != nil {
-			log.Println("error  new fiend", err)
+			log.Println("error new fiend", err)
 			return err
 		}
 	}
@@ -248,10 +245,22 @@ func (m *chatRepositoryImpl) GetAllFriend(ctx context.Context, dbPostgres *sql.D
 			log.Println("error decode", err)
 			return nil, err
 		}
+		// if friend Id equal to my id then set frn id to my id to swap data and get friend data
 		if friend.FrnId == userId {
 			stmt := `SELECT image, name FROM users WHERE id = $1`
 			var image, name string
 			err = dbPostgres.QueryRow(stmt, friend.MyId).Scan(&image, &name)
+			if err != nil {
+				log.Println("error query image", err)
+				continue
+			}
+			friend.FrnName = name
+			friend.FrnImage = image
+			friend.FrnId = friend.MyId
+		} else {
+			stmt := `SELECT image, name FROM users WHERE id = $1`
+			var image, name string
+			err = dbPostgres.QueryRow(stmt, friend.FrnId).Scan(&image, &name)
 			if err != nil {
 				log.Println("error query image", err)
 				continue

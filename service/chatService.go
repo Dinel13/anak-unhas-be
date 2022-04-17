@@ -65,13 +65,13 @@ func (s *chatServiceImpl) ListenWS(ctx context.Context, conn *domain.WebSocketCo
 				if !isUserActive {
 					log.Println("User is not active", payload.To)
 				}
-
+				ctx, _ = context.WithTimeout(context.Background(), 5*time.Second)
 				err = s.repoMongo.SaveChat(ctx, s.chatCltn, &web.Message{
-					From: payload.From,
-					To: payload.To,
+					From:    payload.From,
+					To:      payload.To,
 					Message: payload.Message,
-					Read: false,
-					Time: time.Now(),
+					Read:    false,
+					Time:    time.Now(),
 				})
 				helper.PanicIfError(err)
 
@@ -99,8 +99,8 @@ func (s *chatServiceImpl) MakeChatRead(ctx context.Context, rel *web.Relation) {
 	// return s.ChatRepository.MakeChatRead(s.csdrSession, userId, friendId)
 
 	// for mongo
-	 err := s.repoMongo.MakeChatRead(ctx, s.chatCltn, rel)
-	 helper.PanicIfError(err)
+	err := s.repoMongo.MakeChatRead(ctx, s.chatCltn, rel)
+	helper.PanicIfError(err)
 }
 
 func (s *chatServiceImpl) GetAllFriend(ctx context.Context, userId int) []*web.Friend {
@@ -120,7 +120,7 @@ func (s *chatServiceImpl) GetUnreadChat(ctx context.Context, rel *web.Relation) 
 	messages, err := s.repoMongo.GetUnreadChat(ctx, s.chatCltn, rel)
 	helper.PanicIfError(err)
 
-	return  messages
+	return messages
 }
 
 func (s *chatServiceImpl) GetReadChat(ctx context.Context, rel *web.Relation) []*web.Message {
@@ -130,5 +130,5 @@ func (s *chatServiceImpl) GetReadChat(ctx context.Context, rel *web.Relation) []
 	messages, err := s.repoMongo.GetReadChat(ctx, s.chatCltn, rel)
 	helper.PanicIfError(err)
 
-	return  messages
+	return messages
 }

@@ -117,18 +117,18 @@ func (m *chatRepositoryImpl) GetReadChat(ctx context.Context, chatCltn *mongo.Co
 func (m *chatRepositoryImpl) SaveChat(ctx context.Context, chatCltn *mongo.Collection, chat *web.Message) error {
 	id := generateId(chat.To, chat.From)
 	chatBson := bson.M{
-		"id":   id,
-		"to":   chat.To,
-		"from": chat.From,
-		"body": chat.Message,
-		"read": false,
-		"time": time.Now(),
+		"id":      id,
+		"to":      chat.To,
+		"from":    chat.From,
+		"message": chat.Message,
+		"read":    false,
+		"time":    time.Now(),
 	}
 
 	_, err := chatCltn.InsertOne(ctx, chatBson)
 
 	if err != nil {
-		log.Println("error insert", err)
+		log.Println("error insert new message", err)
 		return err
 	}
 
@@ -183,7 +183,7 @@ func (m *chatRepositoryImpl) SaveOrUpdateTimeFriend(ctx context.Context, dbPostg
 
 		_, err := frnCltn.InsertOne(ctx, chatBson)
 		if err != nil {
-			log.Println("error insert", err)
+			log.Println("error  new fiend", err)
 			return err
 		}
 	}

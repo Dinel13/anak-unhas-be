@@ -32,19 +32,19 @@ type WsJsonResponse struct {
 
 // WsPayload defines the websocket request from the client
 type WsPayload struct {
-	Action   string                  `json:"action"`
-	Message  string                  `json:"message"`
-	From       int                     `json:"from"`
-	To       int                     `json:"to"`
+	Action  string `json:"action"`
+	Message string `json:"message"`
+	From    int    `json:"from"`
+	To      int    `json:"to"`
 }
 
 type Message struct {
-	Id   string    `json:"id" bson:"id"`
-	From int       `json:"from" bson:"from"`
-	To   int       `json:"to" bson:"to"`
-	Read bool      `json:"read" bson:"read"`
-	Message  string                  `json:"message"`
-	Time time.Time `json:"time" bson:"time"`
+	Id      string    `json:"id" bson:"id"`
+	From    int       `json:"from" bson:"from"`
+	To      int       `json:"to" bson:"to"`
+	Read    bool      `json:"read" bson:"read"`
+	Message string    `json:"message" bson:"message"`
+	Time    time.Time `json:"time" bson:"time"`
 }
 
 type Friend struct {

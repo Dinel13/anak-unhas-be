@@ -99,7 +99,6 @@ func (m *userRepositoryImpl) GetByEmail(ctx context.Context, tx *sql.DB, email s
 
 	err := tx.QueryRowContext(ctx, stmt, email).Scan(&user.Id, &user.Name, &user.Password)
 
-
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -107,6 +106,20 @@ func (m *userRepositoryImpl) GetByEmail(ctx context.Context, tx *sql.DB, email s
 		return nil, err
 	}
 
+	return &user, nil
+}
+
+// GetNameAndImage get name and image for list friend in chat
+func (m *userRepositoryImpl) GetNameAndImage(ctx context.Context, tx *sql.DB, id int) (*web.UserNameImage, error) {
+	var user web.UserNameImage
+
+	stmt := `SELECT name, image FROM users WHERE id = $1`
+
+	err := tx.QueryRowContext(ctx, stmt, id).Scan(&user.Name, &user.Image)
+
+	if err != nil {
+		return nil, err
+	}
 	return &user, nil
 }
 

@@ -53,6 +53,11 @@ type UserResponsePassword struct {
 	Password string `json:"password"`
 }
 
+type UserNameImage struct {
+	Name  string `json:"name"`
+	Image string `json:"image"`
+}
+
 type UserUpdatePasswordRequest struct {
 	Id              int    `json:"id"`
 	Password        string `validate:"required,min=1,max=100" json:"password"`

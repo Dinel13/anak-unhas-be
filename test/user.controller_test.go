@@ -81,9 +81,9 @@ func setupRouter(db *sql.DB) http.Handler {
 	}
 
 	// chat
-	chatRepo := repository.NewChatRepository()
+	// chatRepo := repository.NewChatRepository()
 	repoMongo := repomongo.NewChatRepository()
-	chatService := service.NewChatService(chatRepo, repoMongo, db, dbCsdra, dbMongo, validate)
+	chatService := service.NewChatService(repoMongo, userRepository, db, dbMongo, validate)
 	chatController := controller.NewChatController(chatService)
 
 	route := app.NewRouter(userController, chatController)

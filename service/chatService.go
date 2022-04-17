@@ -16,25 +16,25 @@ import (
 )
 
 type chatServiceImpl struct {
-	ChatRepository domain.ChatRepository
-	Validate       *validator.Validate
-	repoMongo      domain.ChatRepoMongo
-	chatCltn       *mongo.Collection
-	frnCltn        *mongo.Collection
-	dbPostgres     *sql.DB
+	repoMongo  domain.ChatRepoMongo
+	userRepo   domain.UserRepository
+	chatCltn   *mongo.Collection
+	frnCltn    *mongo.Collection
+	dbPostgres *sql.DB
+	Validate   *validator.Validate
 }
 
-func NewChatService(ChatRepository domain.ChatRepository, repoMongo domain.ChatRepoMongo, DB *sql.DB, mongo *mongo.Client, validate *validator.Validate) domain.ChatService {
+func NewChatService(repoMongo domain.ChatRepoMongo, userRepo domain.UserRepository, DB *sql.DB, mongo *mongo.Client, validate *validator.Validate) domain.ChatService {
 	chatCltn := mongo.Database("anak-unhas").Collection("message")
 	frnCltn := mongo.Database("anak-unhas").Collection("friend")
 
 	return &chatServiceImpl{
-		ChatRepository: ChatRepository,
-		Validate:       validate,
-		repoMongo:      repoMongo,
-		chatCltn:       chatCltn,
-		frnCltn:        frnCltn,
-		dbPostgres:     DB,
+		Validate:   validate,
+		repoMongo:  repoMongo,
+		userRepo:   userRepo,
+		chatCltn:   chatCltn,
+		frnCltn:    frnCltn,
+		dbPostgres: DB,
 	}
 }
 
@@ -65,7 +65,8 @@ func (s *chatServiceImpl) ListenWS(ctx context.Context, conn *domain.WebSocketCo
 				if !isUserActive {
 					log.Println("User is not active", payload.To)
 				}
-				ctx, _ = context.WithTimeout(context.Background(), 5*time.Second)
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
 				err = s.repoMongo.SaveChat(ctx, s.chatCltn, &web.Message{
 					From:    payload.From,
 					To:      payload.To,
@@ -75,11 +76,16 @@ func (s *chatServiceImpl) ListenWS(ctx context.Context, conn *domain.WebSocketCo
 				})
 				helper.PanicIfError(err)
 
+				frnData, err := s.userRepo.GetNameAndImage(ctx, s.dbPostgres, payload.To)
+				helper.PanicIfError(err)
+
 				err = s.repoMongo.SaveOrUpdateTimeFriend(ctx, s.dbPostgres, s.frnCltn, &web.Friend{
-					MyId:    payload.From,
-					FrnId:   payload.To,
-					Time:    time.Now(),
-					Message: payload.Message,
+					MyId:     payload.From,
+					FrnId:    payload.To,
+					FrnImage: frnData.Image,
+					FrnName:  frnData.Name,
+					Time:     time.Now(),
+					Message:  payload.Message,
 				})
 				helper.PanicIfError(err)
 			}

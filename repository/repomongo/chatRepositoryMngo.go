@@ -220,10 +220,10 @@ func (m *chatRepositoryImpl) GetAllFriend(ctx context.Context, dbPostgres *sql.D
 	// // filter if user id equal to my id or frn id
 	filter := bson.M{
 		"$or": []bson.M{
-			bson.M{
+			{
 				"my_id": userId,
 			},
-			bson.M{
+			{
 				"frn_id": userId,
 			},
 		},

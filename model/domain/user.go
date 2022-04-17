@@ -59,6 +59,7 @@ type UserRepository interface {
 
 	Detail(context.Context, *sql.DB, int) (*web.UserDetailResponse, error)
 	GetByEmail(context.Context, *sql.DB, string) (*web.UserResponsePassword, error)
+	GetNameAndImage(ctx context.Context, tx *sql.DB, id int) (*web.UserNameImage, error) //FOR LIST FRIENDS
 
 	Update(context.Context, *sql.Tx, web.UserUpdateRequest) (*web.UserDetailResponse, error)
 	UpdatePasword(context.Context, *sql.Tx, web.UserUpdatePasswordRequest) (*web.UserResponse, error)
@@ -72,4 +73,3 @@ type UserRepository interface {
 	TotalResultSearch(context.Context, *sql.DB, string) (int, error)
 	TotalResultFilter(context.Context, *sql.DB, web.FilterRequest) (int, error)
 }
-

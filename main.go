@@ -32,13 +32,13 @@ func main() {
 	dbconf := fmt.Sprintf("host=%s port=%s dbname=%s  user=%s password=%s sslmode=disable", dbhost, dbport, dbname, dbuser, dbpass)
 	db, err := app.NewDBpostgres(dbconf)
 	if err != nil {
-		log.Fatal("Cannot connect postges ",err)
+		log.Fatal("Cannot connect postges ", err)
 	}
 	defer db.Close()
 
 	dbMongo, err := app.NewDBMongo(context.Background())
 	if err != nil {
-		log.Fatal("Cannot connect mongo ",err)
+		log.Fatal("Cannot connect mongo ", err)
 	}
 
 	// google oauth
@@ -55,9 +55,9 @@ func main() {
 	userController := controller.NewUserController(userService)
 
 	// chat
-	chatRepo := repository.NewChatRepository()
+	// chatRepo := repository.NewChatRepository() for cassandra
 	repoMongo := repomongo.NewChatRepository()
-	chatService := service.NewChatService(chatRepo, repoMongo, db, dbMongo, validate)
+	chatService := service.NewChatService(repoMongo, userRepository, db, dbMongo, validate)
 	chatController := controller.NewChatController(chatService)
 
 	route := app.NewRouter(userController, chatController)

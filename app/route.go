@@ -1,8 +1,9 @@
 package app
 
 import (
-	"github.com/dinel13/anak-unhas-be/exception"
 	"net/http"
+
+	"github.com/dinel13/anak-unhas-be/exception"
 
 	"github.com/dinel13/anak-unhas-be/middleware"
 	"github.com/dinel13/anak-unhas-be/model/domain"

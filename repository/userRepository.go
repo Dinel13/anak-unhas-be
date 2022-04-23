@@ -261,7 +261,7 @@ func (m *userRepositoryImpl) GetAddress(ctx context.Context, tx *sql.DB, id int)
 
 // SERACH BY NAME
 func (m *userRepositoryImpl) Search(ctx context.Context, DB *sql.DB, query web.SearchRequest) ([]*web.UserSortResponse, error) {
-	stmt := `SELECT id, name, image, jurusan, angkatan FROM users WHERE name LIKE $1 ORDER BY id ASC LIMIT 20 OFFSET ($2 - 1) * 20`
+	stmt := `SELECT id, name, image, jurusan, angkatan FROM users WHERE LOWER(name) LIKE LOWER($1) ORDER BY id ASC LIMIT 80 OFFSET ($2 - 1) * 80`
 
 	rows, err := DB.QueryContext(ctx, stmt, "%"+query.Query+"%", query.Page)
 
@@ -296,7 +296,22 @@ func (m *userRepositoryImpl) Search(ctx context.Context, DB *sql.DB, query web.S
 
 // filter by name, jurusan, angkatan
 func (m *userRepositoryImpl) Filter(ctx context.Context, DB *sql.DB, query web.FilterRequest) ([]*web.UserSortResponse, error) {
-	stmt := `SELECT id, name, image, jurusan, angkatan FROM users WHERE name LIKE $1 AND jurusan LIKE $2  AND fakultas LIKE $3 AND angkatan LIKE $4 ORDER BY id ASC LIMIT 20 OFFSET ($5 - 1) * 20`
+
+	// v := reflect.ValueOf(query)
+	// values := make([]interface{}, v.NumField())
+
+	// for i := 0; i < v.NumField(); i++ {
+	// 	values[i] = v.Field(i).Interface()
+	// }
+
+	stmt := `SELECT id, name, image, jurusan, angkatan FROM users 
+	WHERE LOWER(name) LIKE LOWER($1) AND LOWER(jurusan) LIKE LOWER($2) 
+	and LOWER(fakultas) LIKE LOWER($3) AND LOWER(angkatan) LIKE LOWER($4) 
+	ORDER BY id ASC LIMIT 80 OFFSET ($5 - 1) * 80`
+
+	// stmt := `SELECT id, name, image, jurusan, angkatan FROM users
+	// WHERE name LIKE $1 AND jurusan LIKE $2 AND fakultas LIKE $3
+	// AND angkatan LIKE $4 ORDER BY id ASC LIMIT 20 OFFSET ($5 - 1) * 20`
 
 	log.Println(query)
 	rows, err := DB.QueryContext(ctx, stmt, "%"+query.Name+"%", "%"+query.Jurusan+"%", "%"+query.Fakultas+"%", "%"+query.Angkatan+"%", query.Page)

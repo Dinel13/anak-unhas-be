@@ -152,6 +152,24 @@ func (s *UserServiceImpl) LoginGoogle(ctx context.Context, req web.UserAuthGoogl
 		}
 	}
 
+	// if user not exist, create user
+	if user == nil {
+		userResponse, err = s.UserRepository.Save(ctx, tx, web.UserCreateRequest{
+			Email:    payload.Claims["email"].(string),
+			Name:     payload.Claims["name"].(string),
+			Password: string(hashedPassword),
+		})
+		helper.PanicIfError(err)
+
+		token, err := helper.CreateToken(userResponse.Id)
+		helper.PanicIfError(err)
+
+		userResponse.Token = token
+
+		return userResponse
+	}
+
+	// if user exist, update user
 	token, err := helper.CreateToken(user.Id)
 	helper.PanicIfError(err)
 

@@ -54,8 +54,8 @@ type UserResponsePassword struct {
 }
 
 type UserNameImage struct {
-	Name  string `json:"name"`
-	Image string `json:"image"`
+	Name  string  `json:"name"`
+	Image *string `json:"image"`
 }
 
 type UserUpdatePasswordRequest struct {

@@ -79,14 +79,20 @@ func (s *chatServiceImpl) ListenWS(ctx context.Context, conn *domain.WebSocketCo
 				frnData, err := s.userRepo.GetNameAndImage(ctx, s.dbPostgres, payload.To)
 				helper.PanicIfError(err)
 
-				err = s.repoMongo.SaveOrUpdateTimeFriend(ctx, s.dbPostgres, s.frnCltn, &web.Friend{
-					MyId:     payload.From,
-					FrnId:    payload.To,
-					FrnImage: frnData.Image,
-					FrnName:  frnData.Name,
-					Time:     time.Now(),
-					Message:  payload.Message,
-				})
+				frnToSave := &web.Friend{MyId: payload.From,
+					FrnId:   payload.To,
+					FrnName: frnData.Name,
+					Time:    time.Now(),
+					Message: payload.Message,
+				}
+
+				if frnData.Image == nil {
+					frnToSave.FrnImage = ""
+				} else {
+					frnToSave.FrnImage = *frnData.Image
+				}
+
+				err = s.repoMongo.SaveOrUpdateTimeFriend(ctx, s.dbPostgres, s.frnCltn, frnToSave)
 				helper.PanicIfError(err)
 			}
 		}

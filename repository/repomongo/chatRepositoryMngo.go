@@ -248,25 +248,35 @@ func (m *chatRepositoryImpl) GetAllFriend(ctx context.Context, dbPostgres *sql.D
 		// if friend Id equal to my id then set frn id to my id to swap data and get friend data
 		if friend.FrnId == userId {
 			stmt := `SELECT image, name FROM users WHERE id = $1`
-			var image, name string
+			var name string
+			var image *string
 			err = dbPostgres.QueryRow(stmt, friend.MyId).Scan(&image, &name)
 			if err != nil {
 				log.Println("error query image", err)
 				continue
 			}
 			friend.FrnName = name
-			friend.FrnImage = image
+			if image != nil {
+				friend.FrnImage = *image
+			} else {
+				friend.FrnImage = ""
+			}
 			friend.FrnId = friend.MyId
 		} else {
 			stmt := `SELECT image, name FROM users WHERE id = $1`
-			var image, name string
+			var name string
+			var image *string
 			err = dbPostgres.QueryRow(stmt, friend.FrnId).Scan(&image, &name)
 			if err != nil {
 				log.Println("error query image", err)
 				continue
 			}
 			friend.FrnName = name
-			friend.FrnImage = image
+			if image != nil {
+				friend.FrnImage = *image
+			} else {
+				friend.FrnImage = ""
+			}
 		}
 
 		friends = append(friends, &friend)
